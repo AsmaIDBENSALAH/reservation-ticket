@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Empêche de monter les dossiers IDE de chaque microservice
 **/.idea/
 **/*.iml
@@ -11,10 +10,3 @@
 # Fichiers système
 .DS_Store
 Thumbs.db
-=======
-node_modules/
-dist/
-build/
-.env
-.vscode/
->>>>>>> c92f2152aff8ea7784e916ace75ea5beb37f86a2
