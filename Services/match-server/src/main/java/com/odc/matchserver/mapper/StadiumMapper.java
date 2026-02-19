@@ -60,10 +60,10 @@ public class StadiumMapper {
                         .collect(Collectors.toList())
                         : null)
                 // ---------- HISTORIQUE ----------
-                .createdAt(stadium.getCreatedAt())
-                .updatedAt(stadium.getUpdatedAt())
+                .createdAt(stadium.getCreatedDate())
+                .updatedAt(stadium.getLastModifiedDate())
                 .createdBy(stadium.getCreatedBy())
-                .updatedBy(stadium.getUpdatedBy())
+                .updatedBy(stadium.getLastModifiedBy())
                 .active(stadium.isActive())
                 .build();
     }

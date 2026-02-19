@@ -4,6 +4,7 @@ import com.odc.matchserver.dto.competition.CompetitionRequestDTO;
 import com.odc.matchserver.dto.competition.CompetitionResponseDTO;
 import com.odc.matchserver.services.CompetitionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,7 +16,8 @@ import org.springframework.data.domain.Sort;
 
 
 @RestController
-@RequestMapping("/competitions")
+@RequestMapping("/api/competitions")
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class CompetitionController {
 

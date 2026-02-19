@@ -74,4 +74,11 @@ public class CityServiceImpl implements CityService {
         cityRepository.save(city);
     }
 
+    @Override
+    public Page<CityResponseDTO> searchCities(String keyword, Pageable pageable) {
+        return cityRepository
+                .findByActiveTrueAndNameContainingIgnoreCase(keyword, pageable)
+                .map(CityMapper::toResponseDTO);
+    }
+
 }

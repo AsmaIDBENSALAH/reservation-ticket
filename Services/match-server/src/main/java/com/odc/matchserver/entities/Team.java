@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Team {
+public class Team extends Auditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -49,22 +49,6 @@ public class Team {
     @Column(length = 500)
     private String description;
 
-    // ---------- HISTORIQUE ----------
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @CreatedBy
-    @Column(name = "created_by", updatable = false)
-    private String createdBy;
-
-    @LastModifiedBy
-    @Column(name = "updated_by")
-    private String updatedBy;
 
     private boolean active = true; // Pour soft-delete
 

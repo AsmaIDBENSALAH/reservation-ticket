@@ -1,4 +1,4 @@
-package com.odc.matchserver.controllers;
+package com.odc.matchserver.controller;
 
 import com.odc.matchserver.dto.match.MatchDetailsDTO;
 import com.odc.matchserver.dto.match.MatchRequestDTO;
@@ -9,13 +9,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/matches")
+@RequestMapping("/api/matches")
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class MatchController {
 

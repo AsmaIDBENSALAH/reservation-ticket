@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Stadium {
+public class Stadium extends Auditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -60,22 +60,6 @@ public class Stadium {
     @Builder.Default
     private List<Match> matches = new ArrayList<>();
 
-    // ---------- HISTORIQUE ----------
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @CreatedBy
-    @Column(name = "created_by", updatable = false)
-    private String createdBy;
-
-    @LastModifiedBy
-    @Column(name = "updated_by")
-    private String updatedBy;
 
     private boolean active = true; // Pour soft-delete
 

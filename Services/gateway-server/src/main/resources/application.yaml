@@ -56,7 +56,7 @@ spring:
         - id: reservation-server
           uri: lb://RESERVATION-SERVER
           predicates:
-            - Path=/api/reservation/**
+            - Path=/api/reservations/**
 
         - id: payment-server
           uri: lb://PAYMENT-SERVER
