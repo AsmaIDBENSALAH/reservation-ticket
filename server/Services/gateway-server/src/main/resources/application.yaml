@@ -1,0 +1,88 @@
+# Nom du service
+spring:
+  application:
+    name: gateway-service
+
+  main:
+    web-application-type: reactive
+    allow-bean-definition-overriding: true  # Temporary fix if conflict persists
+
+
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8085/realms/football-realme
+        registration:
+          # This name 'keycloak' must match the provider name above
+          keycloak:
+            provider: keycloak
+            client-id: gateway-service        # CHANGE THIS to your Keycloak Client ID
+            client-secret: NKhYPwtFIdfNRCqcToCA6ZCQIYr5Jeks  # CHANGE THIS to your Keycloak Client Secret
+            scope: openid, profile, email
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8085/realms/football-realme
+
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:5173"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+      # --- ROUTES MOVE TO HERE ---
+      routes:
+        - id: match-server
+          uri: lb://MATCH-SERVER
+          predicates:
+            - Path=/api/** # More specific path for testing
+          filters:
+            - name: Retry
+              args:
+                retries: 3
+                statuses:
+                - INTERNAL_SERVER_ERROR
+                methods: GET,POST
+                backoff:
+                  firstBackoff: 1s
+                  maxBackoff: 5s
+
+
+        - id: reservation-server
+          uri: lb://RESERVATION-SERVER
+          predicates:
+            - Path=/api/reservation/**
+
+        - id: payment-server
+          uri: lb://PAYMENT-SERVER
+          predicates:
+            - Path=/api/payment/**
+
+
+# Port local du gateway (peut être surchargé)
+server:
+  port: 8084
+
+# Eureka
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
