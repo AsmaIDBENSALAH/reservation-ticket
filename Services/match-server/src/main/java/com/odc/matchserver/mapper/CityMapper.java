@@ -32,10 +32,11 @@ public class CityMapper {
                                 : null
                 )
                 // ---------- HISTORIQUE ----------
-                .createdAt(city.getCreatedAt())
-                .updatedAt(city.getUpdatedAt())
+
+                .createdAt(city.getCreatedDate())
+                .updatedAt(city.getLastModifiedDate())
                 .createdBy(city.getCreatedBy())
-                .updatedBy(city.getUpdatedBy())
+                .updatedBy(city.getLastModifiedBy())
                 .active(city.isActive())
                 .build();
     }

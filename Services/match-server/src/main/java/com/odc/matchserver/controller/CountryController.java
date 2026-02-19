@@ -8,27 +8,24 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/countries")
+@RequestMapping("/api/countries")
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class CountryController {
 
     private final CountryService countryService;
 
-    // ----------------- GET ALL COUNTRIES (LIST) -----------------
-    @GetMapping("/all")
-    public List<CountryResponseDTO> getAllCountries() {
-        return countryService.getAllCountries();
-    }
 
     // ----------------- GET ALL COUNTRIES (PAGINATED) -----------------
     @GetMapping
-    public Page<CountryResponseDTO> getAllCountries(
+    public Page<CountryResponseDTO> getAllCountriesByPage(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "name") String sortBy

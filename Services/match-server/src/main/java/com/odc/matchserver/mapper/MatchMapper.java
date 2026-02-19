@@ -63,10 +63,10 @@ public class MatchMapper {
                         .collect(Collectors.toList())
                         : null,
                 // ---------- HISTORIQUE ----------
-                match.getCreatedAt(),
-                match.getUpdatedAt(),
+                match.getCreatedDate(),
+                match.getLastModifiedDate(),
                 match.getCreatedBy(),
-                match.getUpdatedBy(),
+                match.getLastModifiedBy(),
                 match.isActive()
         );
     }

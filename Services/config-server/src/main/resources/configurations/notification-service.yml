@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: notification-service
+  mail:
+    host: smtp.mailtrap.io # Ou smtp.gmail.com
+    port: 2525
+    username: votre_username
+    password: votre_password
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+  kafka:
+    consumer:
+      group-id: notification-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"

@@ -39,10 +39,10 @@ public class MatchZonePricingMapper {
                 entity.getIsActive(),
                 entity.getZone() != null ? entity.getZone().getId() : null,
                 // ---------- HISTORIQUE ----------
-                entity.getCreatedAt(),
-                entity.getUpdatedAt(),
+                entity.getCreatedDate(),
+                entity.getLastModifiedDate(),
                 entity.getCreatedBy(),
-                entity.getUpdatedBy(),
+                entity.getLastModifiedBy(),
                 entity.isActive()
         );
     }

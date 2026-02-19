@@ -3,6 +3,7 @@ package com.odc.matchserver.controller;
 import com.odc.matchserver.dto.CityRequestDTO;
 import com.odc.matchserver.dto.CityResponseDTO;
 import com.odc.matchserver.services.CityService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,13 +17,13 @@ import org.springframework.data.domain.Sort;
 
 @RestController
 @RequestMapping("/api/cities")
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class CityController {
 
     private final CityService cityService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public Page<CityResponseDTO> getCities(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -51,5 +52,12 @@ public class CityController {
     @DeleteMapping("/{id}")
     public void deleteCity(@PathVariable UUID id) {
         cityService.deleteCity(id);
+    }
+
+    @GetMapping("/search")
+    public Page<CityResponseDTO> searchCities(
+            @RequestParam String keyword,
+            Pageable pageable) {
+        return cityService.searchCities(keyword, pageable);
     }
 }

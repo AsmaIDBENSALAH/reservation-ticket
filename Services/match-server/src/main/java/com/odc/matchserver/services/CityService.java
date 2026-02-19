@@ -21,4 +21,6 @@ public interface CityService {
     CityResponseDTO updateCity(UUID id, CityRequestDTO dto, UUID countryId);
 
     void deleteCity(UUID id);
+
+    Page<CityResponseDTO> searchCities(String keyword, Pageable pageable);
 }
