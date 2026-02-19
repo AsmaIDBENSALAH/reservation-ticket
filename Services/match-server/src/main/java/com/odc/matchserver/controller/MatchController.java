@@ -1,4 +1,4 @@
-package com.odc.matchserver.controllers;
+package com.odc.matchserver.controller;
 
 import com.odc.matchserver.dto.match.MatchDetailsDTO;
 import com.odc.matchserver.dto.match.MatchRequestDTO;
@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/matches")
+@RequestMapping("/api/matches")
 @RequiredArgsConstructor
 public class MatchController {
 

@@ -20,9 +20,7 @@ public interface CompetitionService {
 
 
     CompetitionResponseDTO createCompetition(
-            CompetitionRequestDTO dto,
-            UUID countryId,
-            Continent continent // Enum directement
+            CompetitionRequestDTO dto
     );
 
     CompetitionResponseDTO updateCompetition(

@@ -1,6 +1,5 @@
 package com.odc.matchserver.dto.stadium;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -10,7 +9,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,4 +25,7 @@ public class StadiumZoneRequestDTO {
 
     @Size(max = 200, message = "La description ne peut pas dépasser 200 caractères")
     private String description;
+
+     @NotBlank(message = "La porte est obligatoire")
+    private String porte;
 }

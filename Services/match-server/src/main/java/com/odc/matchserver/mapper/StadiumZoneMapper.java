@@ -6,23 +6,24 @@ import com.odc.matchserver.entities.StadiumZone;
 
 public class StadiumZoneMapper {
 
-    // DTO -> Entity
     public static StadiumZone toEntity(StadiumZoneRequestDTO dto, Stadium stadium) {
-        if (dto == null) return null;
+        if (dto == null)
+            return null;
 
         return StadiumZone.builder()
                 .name(dto.getName())
                 .capacity(dto.getCapacity())
                 .description(dto.getDescription())
+                .porte(dto.getPorte() != null ? dto.getPorte() : "DEFAULT") // ← fallback
                 .stadium(stadium)
-                .active(true) // actif par défaut
+                .active(true)
                 .build();
-        // createdAt, updatedAt, createdBy, updatedBy sont gérés automatiquement par JPA
     }
 
     // Entity -> MinimalDTO
     public static StadiumZoneMinimalDTO toMinimalDTO(StadiumZone zone) {
-        if (zone == null) return null;
+        if (zone == null)
+            return null;
 
         return StadiumZoneMinimalDTO.builder()
                 .id(zone.getId())
@@ -40,7 +41,8 @@ public class StadiumZoneMapper {
 
     // Entity -> ResponseDTO
     public static StadiumZoneResponseDTO toResponseDTO(StadiumZone zone) {
-        if (zone == null) return null;
+        if (zone == null)
+            return null;
 
         return StadiumZoneResponseDTO.builder()
                 .id(zone.getId())
@@ -50,8 +52,7 @@ public class StadiumZoneMapper {
                 .stadium(
                         zone.getStadium() != null
                                 ? StadiumMapper.toMinimalDTO(zone.getStadium())
-                                : null
-                )
+                                : null)
                 // ---------- HISTORIQUE ----------
                 .createdAt(zone.getCreatedAt())
                 .updatedAt(zone.getUpdatedAt())
@@ -62,7 +63,8 @@ public class StadiumZoneMapper {
     }
 
     public static void updateEntity(StadiumZone zone, StadiumZoneUpdateDTO dto) {
-        if (zone == null || dto == null) return;
+        if (zone == null || dto == null)
+            return;
 
         if (dto.getName() != null) {
             zone.setName(dto.getName());

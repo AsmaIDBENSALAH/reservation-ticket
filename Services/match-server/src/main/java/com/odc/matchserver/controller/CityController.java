@@ -13,10 +13,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
-
 @RestController
 @RequestMapping("/api/cities")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class CityController {
 
     private final CityService cityService;
@@ -26,9 +26,8 @@ public class CityController {
     public Page<CityResponseDTO> getCities(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sortBy
-    ) {
-        return cityService.getAllCities(PageRequest.of(page, size, Sort.by(sortBy)));
+            @RequestParam(defaultValue = "name") String sortBy) {
+        return cityService.getAllCities(PageRequest.of(page, size));
     }
 
     @GetMapping("/{id}")
@@ -36,15 +35,15 @@ public class CityController {
         return cityService.getCityById(id);
     }
 
-    @PostMapping("/{countryId}")
-    public CityResponseDTO createCity(@PathVariable UUID countryId, @RequestBody CityRequestDTO dto) {
-        return cityService.createCity(dto, countryId);
+    @PostMapping
+    public CityResponseDTO createCity(@RequestBody CityRequestDTO dto) {
+        return cityService.createCity(dto);
     }
 
     @PutMapping("/{id}/{countryId}")
     public CityResponseDTO updateCity(@PathVariable UUID id,
-                                      @PathVariable UUID countryId,
-                                      @RequestBody CityRequestDTO dto) {
+            @PathVariable UUID countryId,
+            @RequestBody CityRequestDTO dto) {
         return cityService.updateCity(id, dto, countryId);
     }
 

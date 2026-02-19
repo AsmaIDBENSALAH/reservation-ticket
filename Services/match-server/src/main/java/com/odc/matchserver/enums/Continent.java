@@ -1,20 +1,17 @@
 package com.odc.matchserver.enums;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum Continent {
-    AFRICA("Afrique"),
-    EUROPE("Europe"),
-    ASIA("Asie"),
-    AMERICAS("Amérique"),
-    OCEANIA("Océanie"),
-    ARAB_WORLD("Arab World");
+    AFRICA,
+    EUROPE,
+    ASIA,
+    AMERICAS,
+    OCEANIA,
+    ANTARCTICA;
 
-    private final String displayName;
-
-    Continent(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public String getDisplayName() {
-        return displayName;
+    @JsonCreator
+    public static Continent from(String value) {
+        if (value == null) return null;
+        return Continent.valueOf(value.trim().toUpperCase());
     }
 }

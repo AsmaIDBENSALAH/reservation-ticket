@@ -5,7 +5,6 @@ import com.odc.matchserver.dto.CityResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface CityService {
@@ -16,7 +15,7 @@ public interface CityService {
 
     CityResponseDTO getCityById(UUID id);
 
-    CityResponseDTO createCity(CityRequestDTO dto, UUID countryId);
+    CityResponseDTO createCity(CityRequestDTO dto);
 
     CityResponseDTO updateCity(UUID id, CityRequestDTO dto, UUID countryId);
 

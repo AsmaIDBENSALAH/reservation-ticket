@@ -25,16 +25,15 @@ public class TeamServiceImpl implements TeamService {
     private final TeamRepository teamRepository;
     private final CountryRepository countryRepository;
 
-    // ---------------- GET ALL TEAMS PAGINATED ----------------
-    @Override
-    public Page<TeamResponseDTO> getAllTeams(Pageable pageable) {
-        return teamRepository.findAllByActiveTrue(pageable)
-                .map(TeamMapper::toResponseDTO);
-    }
-
+    // ---------------- GET TEAMS (ALL OR BY TYPE) ----------------
     @Override
     public Page<TeamResponseDTO> getTeams(Pageable pageable, TeamType type) {
-        return null;
+        if (type == null) {
+            return teamRepository.findAllByActiveTrue(pageable)
+                    .map(TeamMapper::toResponseDTO);
+        }
+        return teamRepository.findAllByActiveTrueAndType(type, pageable)
+                .map(TeamMapper::toResponseDTO);
     }
 
     // ---------------- GET TEAM BY ID ----------------
@@ -53,12 +52,9 @@ public class TeamServiceImpl implements TeamService {
                 .orElseThrow(() -> new CountryNotFoundException("Country not found with id: " + dto.getCountryId()));
 
         Team team = TeamMapper.toEntity(dto, country);
-
-        // Active par défaut
         team.setActive(true);
 
         Team savedTeam = teamRepository.save(team);
-
         return TeamMapper.toResponseDTO(savedTeam);
     }
 

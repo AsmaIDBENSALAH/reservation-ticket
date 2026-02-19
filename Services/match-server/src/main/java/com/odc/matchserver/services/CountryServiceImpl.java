@@ -49,11 +49,11 @@ public class CountryServiceImpl implements CountryService {
 
     // ----------------- CREATE COUNTRY -----------------
     @Override
-    public CountryResponseDTO createCountry(CountryRequestDTO dto, Continent continent) {
-        if (continent == null) throw new IllegalArgumentException("Continent must be provided");
+    public CountryResponseDTO createCountry(CountryRequestDTO dto) {
+        if (dto.getContinentName()== null) throw new IllegalArgumentException("Continent must be provided");
 
-        Country country = CountryMapper.toEntity(dto, continent);
-        country.setContinent(continent);
+        Country country = CountryMapper.toEntity(dto, dto.getContinentName());
+        country.setContinent(dto.getContinentName());
 
         Country saved = countryRepository.save(country);
         return CountryMapper.toResponseDTO(saved);
