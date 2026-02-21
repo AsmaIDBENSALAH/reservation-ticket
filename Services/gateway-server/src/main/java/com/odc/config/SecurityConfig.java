@@ -15,17 +15,20 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
-                // 1. Disable CSRF (Essential for APIs/React)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
-
-                // 2. Enable CORS in Security (so it respects your YAML config)
                 .cors(Customizer.withDefaults())
-
                 .authorizeExchange(exchanges -> exchanges
-                        // 3. ALLOW OPTIONS REQUESTS (Fixes the Redirect/CORS error)
+
+                        // ✅ OPTIONS toujours permis (CORS preflight)
                         .pathMatchers(HttpMethod.OPTIONS).permitAll()
 
-                        // 4. Authenticate everything else
+                        // ✅ ENDPOINTS PUBLICS - fans sans authentification
+                        .pathMatchers(HttpMethod.GET, "/api/matches/**").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/api/competitions/**").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/api/stadiums/**").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/api/teams/**").permitAll()
+
+                        // 🔒 Tout le reste nécessite authentification
                         .anyExchange().authenticated()
                 )
                 .oauth2Login(Customizer.withDefaults())
