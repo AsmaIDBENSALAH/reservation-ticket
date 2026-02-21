@@ -1,6 +1,7 @@
 package com.odc.matchserver.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -14,15 +15,22 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Accès libre pour Swagger
+
+                        // ✅ Swagger
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
-                        // Rôles spécifiques
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/cities/**").hasRole("ADMIN") // Gestion des villes
-                        .requestMatchers("/api/fan/**").hasAnyRole("FAN", "ADMIN")
+                        // ✅ GET publics (déjà filtrés par la Gateway, mais on laisse passer)
+                        .requestMatchers(HttpMethod.GET, "/api/matches/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/competitions/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/stadiums/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/teams/**").permitAll()
 
-                        // Tout le reste
+                        // 🔒 Rôles spécifiques
+                        .requestMatchers(HttpMethod.POST, "/api/matches/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/matches/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/matches/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
