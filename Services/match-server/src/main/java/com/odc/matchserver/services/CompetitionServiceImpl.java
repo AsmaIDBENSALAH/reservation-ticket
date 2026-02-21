@@ -42,30 +42,42 @@ public class CompetitionServiceImpl implements CompetitionService {
     }
 
     @Override
-    public CompetitionResponseDTO createCompetition(
-            CompetitionRequestDTO dto,
-            UUID countryId,
-            Continent continent // Enum directement
-    ) {
+    public CompetitionResponseDTO createCompetition(CompetitionRequestDTO dto) {
+        if (dto.getScope() == null) {
+            throw new IllegalArgumentException("Competition scope must be provided");
+        }
+
         Country country = null;
         List<Country> countries = null;
 
         switch (dto.getScope()) {
             case NATIONAL:
-                country = countryRepository.findById(countryId)
-                        .orElseThrow(() -> new CountryNotFoundException("Country with id " + countryId + " not found"));
+                if (dto.getCountryId() == null) {
+                    throw new IllegalArgumentException("countryId must be provided for NATIONAL competitions");
+                }
+                country = countryRepository.findById(dto.getCountryId())
+                        .orElseThrow(() -> new CountryNotFoundException(
+                                "Country with id " + dto.getCountryId() + " not found"));
                 break;
             case CONTINENTAL:
-                if (continent == null) {
+                if (dto.getContinent() == null) {
                     throw new IllegalArgumentException("Continent must be provided for CONTINENTAL competitions");
                 }
                 break;
             case REGIONAL:
+                if (dto.getCountryIds() == null || dto.getCountryIds().isEmpty()) {
+                    throw new IllegalArgumentException("countryIds must be provided for REGIONAL competitions");
+                }
                 countries = countryRepository.findAllById(dto.getCountryIds());
                 break;
+            case INTERNATIONAL:
+                // No extra fields needed
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown scope: " + dto.getScope());
         }
 
-        Competition competition = CompetitionMapper.toEntity(dto, country, continent, countries);
+        Competition competition = CompetitionMapper.toEntity(dto, country, dto.getContinent(), countries);
         Competition saved = competitionRepository.save(competition);
 
         return CompetitionMapper.toResponseDTO(saved);
@@ -132,7 +144,8 @@ public class CompetitionServiceImpl implements CompetitionService {
     // ----------------- 1 CONTINENTAL -----------------
     @Override
     public Page<CompetitionResponseDTO> getContinentalCompetitions(Continent continent, Pageable pageable) {
-        if (continent == null) throw new IllegalArgumentException("Continent must be provided");
+        if (continent == null)
+            throw new IllegalArgumentException("Continent must be provided");
         return competitionRepository
                 .findByActiveTrueAndScopeAndContinent(CompetitionScope.CONTINENTAL, continent, pageable)
                 .map(CompetitionMapper::toResponseDTO);
@@ -141,7 +154,8 @@ public class CompetitionServiceImpl implements CompetitionService {
     // ----------------- 2 NATIONAL -----------------
     @Override
     public Page<CompetitionResponseDTO> getNationalCompetitions(UUID countryId, Pageable pageable) {
-        if (countryId == null) throw new IllegalArgumentException("CountryId must be provided");
+        if (countryId == null)
+            throw new IllegalArgumentException("CountryId must be provided");
         return competitionRepository
                 .findByActiveTrueAndScopeAndCountryId(CompetitionScope.NATIONAL, countryId, pageable)
                 .map(CompetitionMapper::toResponseDTO);

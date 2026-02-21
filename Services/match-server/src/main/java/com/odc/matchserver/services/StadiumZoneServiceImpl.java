@@ -78,11 +78,12 @@ public class StadiumZoneServiceImpl implements StadiumZoneService {
     @Override
     public void delete(UUID id) {
 
-        if (!stadiumZoneRepository.existsById(id)) {
-            throw new StadiumNotFoundException("Zone not found");
-        }
 
-        stadiumZoneRepository.deleteById(id);
+        StadiumZone stadiumZone = stadiumZoneRepository.findById(id)
+                .orElseThrow(() -> new StadiumNotFoundException("Stadium not found"));
+stadiumZone.setActive(false);
+
+        stadiumZoneRepository.save(stadiumZone);
     }
 
 

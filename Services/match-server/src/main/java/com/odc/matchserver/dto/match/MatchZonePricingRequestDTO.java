@@ -12,6 +12,6 @@ import java.util.UUID;
 public class MatchZonePricingRequestDTO {
     private BigDecimal price;
     private Integer availableSeats;
-    private Boolean isActive;
     private UUID zoneId;
+
 }

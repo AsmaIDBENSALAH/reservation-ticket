@@ -2,7 +2,7 @@ import type { ContinentName } from "../countries/countriesTypes";
 
 export type TeamType = "CLUB" | "NATIONAL";
 
-export type CompetitionScope = "NATIONAL" | "CONTINENTAL" | "GLOBAL";
+export type CompetitionScope = "NATIONAL" | "CONTINENTAL" | "INTERNATIONAL" | "REGIONAL";
 
 export interface CompetitionCountry {
   id: string;

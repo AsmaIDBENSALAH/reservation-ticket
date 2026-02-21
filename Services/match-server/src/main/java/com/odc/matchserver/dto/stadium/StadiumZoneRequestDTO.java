@@ -27,4 +27,7 @@ public class StadiumZoneRequestDTO {
 
     @Size(max = 200, message = "La description ne peut pas dépasser 200 caractères")
     private String description;
+    @NotNull(message = "La porte est obligatoire")
+    private String porte;
+
 }

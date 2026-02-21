@@ -18,8 +18,8 @@ public class MatchZonePricingResponseDTO {
     private BigDecimal price;
     private Integer availableSeats;
     private Integer soldSeats;
-    private Boolean isActive;
     private UUID zoneId;
+    private String name;
 
     // ---------- HISTORIQUE ----------
     private LocalDateTime createdAt;

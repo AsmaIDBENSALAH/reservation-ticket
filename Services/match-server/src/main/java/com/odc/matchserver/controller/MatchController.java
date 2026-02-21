@@ -1,4 +1,4 @@
-package com.odc.matchserver.controllers;
+package com.odc.matchserver.controller;
 
 import com.odc.matchserver.dto.match.MatchDetailsDTO;
 import com.odc.matchserver.dto.match.MatchRequestDTO;
@@ -9,14 +9,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/matches")
+@RequestMapping("/api/matches")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class MatchController {
 
     private final MatchService matchService;
@@ -42,6 +44,10 @@ public class MatchController {
     // ----------------- CREATE MATCH -----------------
     @PostMapping
     public MatchResponseDTO createMatch(@RequestBody MatchRequestDTO dto) {
+
+        System.out.println("ggg");
+        System.out.println(dto);
+
         return matchService.createMatch(dto);
     }
 
@@ -51,6 +57,7 @@ public class MatchController {
             @PathVariable UUID id,
             @RequestBody MatchRequestDTO dto
     ) {
+        System.out.println(">>> UPDATE MATCH CALLED for id = " + id);
         return matchService.updateMatch(id, dto);
     }
 

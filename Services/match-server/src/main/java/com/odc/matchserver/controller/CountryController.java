@@ -10,31 +10,31 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import org.springframework.data.domain.Pageable;
+
+
+
+
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/countries")
+@RequestMapping("/api/countries")
 @RequiredArgsConstructor
 public class CountryController {
 
     private final CountryService countryService;
 
-    // ----------------- GET ALL COUNTRIES (LIST) -----------------
-    @GetMapping("/all")
-    public List<CountryResponseDTO> getAllCountries() {
-        return countryService.getAllCountries();
-    }
 
     // ----------------- GET ALL COUNTRIES (PAGINATED) -----------------
     @GetMapping
     public Page<CountryResponseDTO> getAllCountries(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sortBy
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size
     ) {
-        return countryService.getAllCountries(PageRequest.of(page, size, Sort.by(sortBy)));
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        return countryService.getAllCountries(pageable);
     }
+
 
     // ----------------- GET COUNTRY BY ID -----------------
     @GetMapping("/{id}")
@@ -45,10 +45,9 @@ public class CountryController {
     // ----------------- CREATE COUNTRY -----------------
     @PostMapping
     public CountryResponseDTO createCountry(
-            @RequestBody CountryRequestDTO dto,
-            @RequestParam Continent continent
+            @RequestBody CountryRequestDTO dto
     ) {
-        return countryService.createCountry(dto, continent);
+        return countryService.createCountry(dto);
     }
 
     // ----------------- UPDATE COUNTRY -----------------

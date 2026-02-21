@@ -34,6 +34,7 @@ public class StadiumController {
     // ---------------- CREATE ----------------
     @PostMapping
     public ResponseEntity<StadiumMinimalDTO> create(@RequestBody StadiumRequestDTO dto) {
+        System.out.println(dto);
         StadiumMinimalDTO created = stadiumService.create(dto);
         return ResponseEntity.ok(created);
     }

@@ -73,7 +73,9 @@ public class Match {
     private List<MatchZonePricing> zonePricings = new ArrayList<>();
 
 
-
+    @Column(length = 3, nullable = false)
+    @Builder.Default
+    private String currency = "MAD";
     //nombre de tickets par match
 
     // ---------- HISTORIQUE ----------

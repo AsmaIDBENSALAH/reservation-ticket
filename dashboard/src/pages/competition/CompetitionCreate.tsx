@@ -25,7 +25,8 @@ const teamTypeOptions = [
 const scopeOptions = [
   { value: "NATIONAL", label: "National" },
   { value: "CONTINENTAL", label: "Continental" },
-  { value: "GLOBAL", label: "Global" },
+  { value: "INTERNATIONAL", label: "International" },
+  { value: "REGIONAL", label: "Regional" },
 ];
 
 const continentOptions = [
@@ -56,6 +57,13 @@ const CompetitionCreate = () => {
   const [countrySelectKey, setCountrySelectKey] = useState(0);
 
   useEffect(() => {
+    setCountryId("");
+    setCountryIds([]);
+    setContinent("");
+    setCountrySelectKey((k) => k + 1);
+  }, [scope]);
+
+  useEffect(() => {
     void dispatch(fetchCountries({ page: 0, size: COUNTRIES_PAGE_SIZE }));
   }, [dispatch]);
 
@@ -83,23 +91,30 @@ const CompetitionCreate = () => {
   };
 
   const handleSubmit = async () => {
-    if (!name.trim() || !abbreviation.trim() || !teamType || !scope || !continent || !countryId) {
-      return;
+    if (!name.trim() || !abbreviation.trim() || !teamType || !scope) return;
+
+    const payload: any = {
+      name: name.trim(),
+      abbreviation: abbreviation.trim(),
+      logoUrl: logoUrl.trim(),
+      description: description.trim(),
+      teamType,
+      scope,
+    };
+
+    if (scope === "NATIONAL") {
+      payload.countryId = countryId;
     }
 
-    const resultAction = await dispatch(
-      createCompetition({
-        name: name.trim(),
-        abbreviation: abbreviation.trim(),
-        logoUrl: logoUrl.trim(),
-        description: description.trim(),
-        teamType,
-        scope,
-        countryId,
-        continent,
-        countryIds,
-      }),
-    );
+    if (scope === "REGIONAL") {
+      payload.countryIds = countryIds;
+    }
+
+    if (scope === "CONTINENTAL") {
+      payload.continent = continent;
+    }
+
+    const resultAction = await dispatch(createCompetition(payload));
 
     if (createCompetition.fulfilled.match(resultAction)) {
       resetForm();
@@ -170,35 +185,43 @@ const CompetitionCreate = () => {
               />
             </div>
 
-            <div>
-              <Label>Continent</Label>
-              <Select
-                options={continentOptions}
-                placeholder="Select continent"
-                defaultValue={continent}
-                onChange={(value) => setContinent(value as ContinentName)}
-              />
-            </div>
+            {/* CONTINENTAL */}
+            {scope === "CONTINENTAL" && (
+                <div>
+                  <Label>Continent</Label>
+                  <Select
+                      options={continentOptions}
+                      placeholder="Select continent"
+                      defaultValue={continent}
+                      onChange={(value) => setContinent(value as ContinentName)}
+                  />
+                </div>
+            )}
 
-            <div>
-              <Label>Country</Label>
-              <Select
-                key={countrySelectKey}
-                options={countryOptions}
-                placeholder="Select country"
-                defaultValue={countryId}
-                onChange={setCountryId}
-              />
-            </div>
+            {/* NATIONAL */}
+            {scope === "NATIONAL" && (
+                <div>
+                  <Label>Country</Label>
+                  <Select
+                      key={countrySelectKey}
+                      options={countryOptions}
+                      placeholder="Select country"
+                      defaultValue={countryId}
+                      onChange={setCountryId}
+                  />
+                </div>
+            )}
 
-            <MultiSelect
-              label="Countries"
-              options={countryMultiSelectOptions}
-              value={countryIds}
-              onChange={setCountryIds}
-              placeholder="Select countries"
-            />
-
+            {/* REGIONAL */}
+            {scope === "REGIONAL" && (
+                <MultiSelect
+                    label="Countries"
+                    options={countryMultiSelectOptions}
+                    value={countryIds}
+                    onChange={setCountryIds}
+                    placeholder="Select countries"
+                />
+            )}
             {error && <p className="text-sm text-error-500">{error}</p>}
 
             <div className="flex items-center gap-3">

@@ -1,11 +1,15 @@
 package com.odc.matchserver.enums;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 public enum MatchStatus {
     SCHEDULED,      // Programmé
-    LIVE,           // En cours
     FINISHED,       // Terminé
     CANCELLED,      // Annulé
     POSTPONED,     // Reporté
-    SUSPENDED,      // Suspendu
+
+
+
 
     }
 
