@@ -22,7 +22,7 @@ public interface CountryService {
 
 
     // ----------------- CREATE COUNTRY -----------------
-    CountryResponseDTO createCountry(CountryRequestDTO dto, Continent continent);
+    CountryResponseDTO createCountry(CountryRequestDTO dto);
 
     // ----------------- UPDATE COUNTRY -----------------
     CountryResponseDTO updateCountry(UUID id, CountryRequestDTO dto, Continent continent);

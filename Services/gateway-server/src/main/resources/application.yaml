@@ -37,7 +37,7 @@ spring:
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedOrigins: "http://localhost:3000"
+            allowedOrigins: "http://localhost:5173"
             allowedMethods:
               - GET
               - POST
@@ -52,6 +52,17 @@ spring:
           uri: lb://MATCH-SERVER
           predicates:
             - Path=/api/** # More specific path for testing
+          filters:
+            - name: Retry
+              args:
+                retries: 3
+                statuses:
+                  - INTERNAL_SERVER_ERROR
+                methods: GET,POST,PUT,DELETE
+                backoff:
+                  firstBackoff: 1s
+                  maxBackoff: 5s
+
 
         - id: reservation-server
           uri: lb://RESERVATION-SERVER

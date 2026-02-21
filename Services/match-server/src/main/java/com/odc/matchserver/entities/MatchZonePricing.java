@@ -35,9 +35,7 @@ public class MatchZonePricing {
     @Builder.Default
     private Integer soldSeats = 0;
 
-    @Column(name = "is_active")
-    @Builder.Default
-    private Boolean isActive = true;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "match_id", nullable = false)
@@ -46,6 +44,8 @@ public class MatchZonePricing {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "zone_id", nullable = false)
     private StadiumZone zone;
+
+
 
     // ---------- HISTORIQUE ----------
     @CreatedDate

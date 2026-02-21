@@ -3,6 +3,7 @@ export interface StadiumZone {
   name: string;
   capacity: number;
   description: string;
+  porte : string;
   createdAt: string;
   updatedAt: string;
   active: boolean;

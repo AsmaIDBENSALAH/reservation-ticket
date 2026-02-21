@@ -15,4 +15,5 @@ public class MatchDetailsDTO {
     private String address;
     private String competition;
     private List<MatchZoneDTO> zones;
+    private String currency;
 }

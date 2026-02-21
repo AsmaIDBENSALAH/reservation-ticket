@@ -9,6 +9,7 @@ export const getStadiums = async (page: number, size: number): Promise<Paginated
 };
 
 export const createStadium = async (payload: CreateStadiumPayload): Promise<Stadium> => {
+  console.log(payload);
   const { data } = await axiosInstance.post<Stadium>("/api/stadiums", payload);
   return data;
 };

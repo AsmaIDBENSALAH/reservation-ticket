@@ -61,6 +61,7 @@ public class StadiumServiceImpl implements StadiumService {
         // 1️⃣ Création du stadium
         Stadium stadium = StadiumMapper.toEntity(dto, city, country);
 
+        System.out.println(stadium);
         Stadium saved = stadiumRepository.save(stadium);
 
         // 2️⃣ Création des zones du stadium

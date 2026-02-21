@@ -35,6 +35,7 @@ public class MatchMapper {
                 .homeTeam(homeTeam)
                 .awayTeam(awayTeam)
                 .competition(competition)
+                .currency(dto.getCurrency())
                 .active(true) // actif par défaut
                 .build();
         // createdAt, updatedAt, createdBy, updatedBy sont gérés automatiquement par JPA
@@ -52,10 +53,26 @@ public class MatchMapper {
                 match.getAttendance(),
                 match.getReferee(),
                 match.getMatchImageUrl(),
-                match.getStadium() != null ? match.getStadium().getId() : null,
+
+                // stadiumName
+                match.getStadium() != null ? match.getStadium().getName() : null,
+
+                // home team
                 match.getHomeTeam() != null ? match.getHomeTeam().getId() : null,
+                match.getHomeTeam() != null ? match.getHomeTeam().getName() : null,
+                match.getHomeTeam() != null ? match.getHomeTeam().getAbbreviation() : null,
+                match.getHomeTeam() != null ? match.getHomeTeam().getLogoUrl() : null,
+
+                // away team
                 match.getAwayTeam() != null ? match.getAwayTeam().getId() : null,
+                match.getAwayTeam() != null ? match.getAwayTeam().getName() : null,
+                match.getAwayTeam() != null ? match.getAwayTeam().getAbbreviation() : null,
+                match.getAwayTeam() != null ? match.getAwayTeam().getLogoUrl() : null,
+
+                // competition
                 match.getCompetition() != null ? match.getCompetition().getId() : null,
+                match.getCompetition() != null ? match.getCompetition().getName() : null,
+                match.getCurrency(),
                 match.getZonePricings() != null
                         ? match.getZonePricings()
                         .stream()
@@ -85,6 +102,7 @@ public class MatchMapper {
                 .date(match.getDateTime())
                 .address(match.getStadium().getAddress())
                 .competition(match.getCompetition().getName())
+                .currency(match.getCurrency())
                 .zones(zones)
                 .build();
     }

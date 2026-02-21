@@ -4,6 +4,7 @@ import competitionsReducer from "../features/competitions/competitionSlice";
 import countriesReducer from "../features/countries/countriesSlice";
 import citiesReducer from "../features/cities/citySlice";
 import stadiumsReducer from "../features/stadiums/stadiumSlice";
+import matchesReducer from "../features/matchs/matchSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     countries: countriesReducer,
     cities: citiesReducer,
     stadiums: stadiumsReducer,
+    matches: matchesReducer,
   },
 });
 

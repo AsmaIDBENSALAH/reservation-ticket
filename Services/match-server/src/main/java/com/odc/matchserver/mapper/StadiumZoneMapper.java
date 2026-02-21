@@ -14,6 +14,7 @@ public class StadiumZoneMapper {
                 .name(dto.getName())
                 .capacity(dto.getCapacity())
                 .description(dto.getDescription())
+                .porte(dto.getPorte())
                 .stadium(stadium)
                 .active(true) // actif par défaut
                 .build();
@@ -29,6 +30,7 @@ public class StadiumZoneMapper {
                 .name(zone.getName())
                 .capacity(zone.getCapacity())
                 .description(zone.getDescription())
+                .porte(zone.getPorte())
                 // ---------- HISTORIQUE ----------
                 .createdAt(zone.getCreatedAt())
                 .updatedAt(zone.getUpdatedAt())
@@ -47,6 +49,7 @@ public class StadiumZoneMapper {
                 .name(zone.getName())
                 .capacity(zone.getCapacity())
                 .description(zone.getDescription())
+                .porte(zone.getPorte())
                 .stadium(
                         zone.getStadium() != null
                                 ? StadiumMapper.toMinimalDTO(zone.getStadium())
