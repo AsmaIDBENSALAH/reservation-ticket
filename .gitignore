@@ -1,12 +1,18 @@
-# Empêche de monter les dossiers IDE de chaque microservice
+node_modules/
+dist/
+build/
+.env
+.vscode/
+
+# Empï¿½che de monter les dossiers IDE de chaque microservice
 **/.idea/
 **/*.iml
 **/.vscode/
 
-# Empêche de monter les dossiers de compilation (très lourd)
+# Empï¿½che de monter les dossiers de compilation (trï¿½s lourd)
 **/target/
 **/*.class
 
-# Fichiers système
+# Fichiers systï¿½me
 .DS_Store
 Thumbs.db
