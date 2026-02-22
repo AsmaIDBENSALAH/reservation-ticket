@@ -3,12 +3,11 @@ package com.odc.matchserver.repositories;
 import com.odc.matchserver.entities.Match;
 import com.odc.matchserver.entities.Stadium;
 
-import feign.Param;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -27,7 +26,9 @@ public interface MatchRepository extends JpaRepository<Match, UUID> {
     // Vérifier si le stade est déjà occupé à une date donnée
     boolean existsByStadiumAndDateTime(Stadium stadium, LocalDateTime dateTime);
 
-    @Query("SELECT COUNT(m) > 0 FROM Match m WHERE m.stadium = :stadium AND m.dateTime BETWEEN :from AND :to")
+    @Query("SELECT COUNT(m) > 0 FROM Match m WHERE m.stadium = :stadium " +
+            "AND m.dateTime > :from AND m.dateTime < :to " +
+            "AND m.active = true")
     boolean existsByStadiumAndDateTimeRange(
             @Param("stadium") Stadium stadium,
             @Param("from") LocalDateTime from,

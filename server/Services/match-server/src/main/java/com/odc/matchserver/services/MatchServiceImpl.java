@@ -68,6 +68,9 @@ public class MatchServiceImpl implements MatchService {
                                 .orElseThrow(() -> new TeamNotFoundException(
                                                 "Away team not found with id: " + dto.getAwayTeamId()));
 
+                if (dto.getHomeTeamId().equals(dto.getAwayTeamId()))
+                        throw new IllegalArgumentException("Home team and away team cannot be the same");
+
                 Competition competition = null;
                 if (dto.getCompetitionId() != null) {
                         competition = competitionRepository.findById(dto.getCompetitionId())
@@ -96,6 +99,7 @@ public class MatchServiceImpl implements MatchService {
         }
 
         @Override
+        @Transactional
         public MatchResponseDTO updateMatch(UUID id, MatchRequestDTO dto) {
                 Match match = matchRepository.findById(id)
                                 .orElseThrow(() -> new MatchNotFoundException("Match not found with id: " + id));
@@ -134,12 +138,29 @@ public class MatchServiceImpl implements MatchService {
                                                                         "Away team not found with id: "
                                                                                         + dto.getAwayTeamId())));
 
+                if (dto.getHomeTeamId() != null && dto.getAwayTeamId() != null)
+                        if (dto.getHomeTeamId().equals(dto.getAwayTeamId()))
+                                throw new IllegalArgumentException("Home team and away team cannot be the same");
+
                 if (dto.getCompetitionId() != null)
                         match.setCompetition(
                                         competitionRepository.findById(dto.getCompetitionId())
                                                         .orElseThrow(() -> new CompetitionNotFoundException(
                                                                         "Competition not found with id: "
                                                                                         + dto.getCompetitionId())));
+
+                if (dto.getZonePricings() != null && !dto.getZonePricings().isEmpty()) {
+                        match.getZonePricings().clear();
+                        List<MatchZonePricing> zonePricings = dto.getZonePricings().stream()
+                                        .map(z -> {
+                                                StadiumZone zone = stadiumZoneRepository.findById(z.getZoneId())
+                                                                .orElseThrow(() -> new ZoneNotFoundException(
+                                                                                "Zone not found with id: "
+                                                                                                + z.getZoneId()));
+                                                return MatchZonePricingMapper.toEntity(z, match, zone);
+                                        }).collect(Collectors.toList());
+                        match.setZonePricings(zonePricings);
+                }
 
                 return matchMapper.toResponseDTO(matchRepository.save(match));
         }
@@ -181,7 +202,6 @@ public class MatchServiceImpl implements MatchService {
                 return matchMapper.toMatchDetailsDTO(match);
         }
 
-        // ----------------- FILTER METHODS -----------------
         @Override
         public Page<MatchResponseDTO> getMatchesByCompetition(UUID competitionId, Pageable pageable) {
                 return matchRepository.findByCompetition_Id(competitionId, pageable)
