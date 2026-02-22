@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MatchZonePricing {
+public class MatchZonePricing  extends Auditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -35,7 +35,9 @@ public class MatchZonePricing {
     @Builder.Default
     private Integer soldSeats = 0;
 
-
+    @Column(name = "is_active")
+    @Builder.Default
+    private Boolean isActive = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "match_id", nullable = false)
@@ -45,24 +47,6 @@ public class MatchZonePricing {
     @JoinColumn(name = "zone_id", nullable = false)
     private StadiumZone zone;
 
-
-
-    // ---------- HISTORIQUE ----------
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @CreatedBy
-    @Column(name = "created_by", updatable = false)
-    private String createdBy;
-
-    @LastModifiedBy
-    @Column(name = "updated_by")
-    private String updatedBy;
 
     private boolean active = true; // Pour soft-delete
 

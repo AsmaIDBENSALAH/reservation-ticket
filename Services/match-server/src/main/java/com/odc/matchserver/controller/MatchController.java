@@ -17,8 +17,8 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/matches")
-@RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
+@RequiredArgsConstructor
 public class MatchController {
 
     private final MatchService matchService;
@@ -44,10 +44,6 @@ public class MatchController {
     // ----------------- CREATE MATCH -----------------
     @PostMapping
     public MatchResponseDTO createMatch(@RequestBody MatchRequestDTO dto) {
-
-        System.out.println("ggg");
-        System.out.println(dto);
-
         return matchService.createMatch(dto);
     }
 
@@ -57,7 +53,6 @@ public class MatchController {
             @PathVariable UUID id,
             @RequestBody MatchRequestDTO dto
     ) {
-        System.out.println(">>> UPDATE MATCH CALLED for id = " + id);
         return matchService.updateMatch(id, dto);
     }
 

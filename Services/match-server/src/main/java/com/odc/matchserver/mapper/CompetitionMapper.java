@@ -65,10 +65,10 @@ public class CompetitionMapper {
                                 .collect(Collectors.toList())
                                 : null
                 )
-                .createdAt(competition.getCreatedAt())
-                .updatedAt(competition.getUpdatedAt())
+                .createdAt(competition.getCreatedDate())
+                .updatedAt(competition.getLastModifiedDate())
                 .createdBy(competition.getCreatedBy())
-                .updatedBy(competition.getUpdatedBy())
+                .updatedBy(competition.getLastModifiedBy())
                 .active(competition.isActive())
                 .build();
     }

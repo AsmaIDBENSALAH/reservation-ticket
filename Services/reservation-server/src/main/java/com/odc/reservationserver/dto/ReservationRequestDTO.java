@@ -23,4 +23,6 @@ public class ReservationRequestDTO {
 
     private UUID stadiumZoneId;
     private int quantity; // nombre de sièges demandés
+
+    private String stripeToken; // 👈 AJOUTE CECI
 }

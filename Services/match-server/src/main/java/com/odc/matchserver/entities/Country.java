@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Country {
+public class Country extends Auditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -29,22 +29,7 @@ public class Country {
     @Enumerated(EnumType.STRING)
     private Continent continent;
 
-    // ---------- HISTORIQUE ----------
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
 
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @CreatedBy
-    @Column(name = "created_by", updatable = false)
-    private String createdBy;
-
-    @LastModifiedBy
-    @Column(name = "updated_by")
-    private String updatedBy;
 
     private boolean active = true; // Pour soft-delete
 

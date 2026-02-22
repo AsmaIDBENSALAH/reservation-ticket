@@ -32,10 +32,10 @@ public class StadiumZoneMapper {
                 .description(zone.getDescription())
                 .porte(zone.getPorte())
                 // ---------- HISTORIQUE ----------
-                .createdAt(zone.getCreatedAt())
-                .updatedAt(zone.getUpdatedAt())
+                .createdAt(zone.getCreatedDate())
+                .updatedAt(zone.getLastModifiedDate())
                 .createdBy(zone.getCreatedBy())
-                .updatedBy(zone.getUpdatedBy())
+                .updatedBy(zone.getLastModifiedBy())
                 .active(zone.isActive())
                 .build();
     }
@@ -56,10 +56,10 @@ public class StadiumZoneMapper {
                                 : null
                 )
                 // ---------- HISTORIQUE ----------
-                .createdAt(zone.getCreatedAt())
-                .updatedAt(zone.getUpdatedAt())
+                .createdAt(zone.getCreatedDate())
+                .updatedAt(zone.getLastModifiedDate())
                 .createdBy(zone.getCreatedBy())
-                .updatedBy(zone.getUpdatedBy())
+                .updatedBy(zone.getLastModifiedBy())
                 .active(zone.isActive())
                 .build();
     }

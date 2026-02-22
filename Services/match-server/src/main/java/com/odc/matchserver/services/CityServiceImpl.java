@@ -27,9 +27,10 @@ public class CityServiceImpl implements CityService {
     // ----------------- Pagination -----------------
     @Override
     public Page<CityResponseDTO> getAllCities(Pageable pageable) {
-        return cityRepository.findByActiveTrueOrderByCreatedAtDesc(pageable)
+        return cityRepository.findByActiveTrue(pageable)
                 .map(CityMapper::toResponseDTO);
     }
+
 
     @Override
     public CityResponseDTO getCityById(UUID id) {
@@ -39,10 +40,9 @@ public class CityServiceImpl implements CityService {
     }
 
     @Override
-    public CityResponseDTO createCity(CityRequestDTO dto) {
-        Country country = countryRepository.findById(dto.getCountryId())
-                .orElseThrow(
-                        () -> new CountryNotFoundException("Country with id " + dto.getCountryId() + " not found"));
+    public CityResponseDTO createCity(CityRequestDTO dto, UUID countryId) {
+        Country country = countryRepository.findById(countryId)
+                .orElseThrow(() -> new CountryNotFoundException("Country with id " + countryId + " not found"));
 
         City city = CityMapper.toEntity(dto, country);
         City savedCity = cityRepository.save(city);
@@ -70,8 +70,15 @@ public class CityServiceImpl implements CityService {
         City city = cityRepository.findById(id)
                 .orElseThrow(() -> new CityNotFoundException("City with id " + id + " not found"));
 
-        city.setActive(false);
+        city.setActive(false); // soft delete
         cityRepository.save(city);
+    }
+
+    @Override
+    public Page<CityResponseDTO> searchCities(String keyword, Pageable pageable) {
+        return cityRepository
+                .findByActiveTrueAndNameContainingIgnoreCase(keyword, pageable)
+                .map(CityMapper::toResponseDTO);
     }
 
 }
