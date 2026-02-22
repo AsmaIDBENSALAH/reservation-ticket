@@ -40,10 +40,10 @@ public class TeamMapper {
                         ? CountryMapper.toResponseDTO(team.getCountry())
                         : null)
                 // ---------- HISTORIQUE ----------
-                .createdAt(team.getCreatedAt())
-                .updatedAt(team.getUpdatedAt())
+                .createdAt(team.getCreatedDate())
+                .updatedAt(team.getLastModifiedDate())
                 .createdBy(team.getCreatedBy())
-                .updatedBy(team.getUpdatedBy())
+                .updatedBy(team.getLastModifiedBy())
                 .active(team.isActive())
                 .build();
     }

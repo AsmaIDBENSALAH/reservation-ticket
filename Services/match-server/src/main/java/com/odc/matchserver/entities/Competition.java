@@ -20,7 +20,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Competition {
+public class Competition extends Auditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -60,22 +60,6 @@ public class Competition {
     )
     private List<Country> countries;
 
-    // ---------- HISTORIQUE ----------
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @CreatedBy
-    @Column(name = "created_by", updatable = false)
-    private String createdBy;
-
-    @LastModifiedBy
-    @Column(name = "updated_by")
-    private String updatedBy;
 
     private boolean active = true; // Pour soft-delete
 

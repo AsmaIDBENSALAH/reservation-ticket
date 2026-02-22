@@ -8,17 +8,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import org.springframework.data.domain.Pageable;
-
-
-
-
+import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/countries")
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class CountryController {
 
@@ -27,14 +25,13 @@ public class CountryController {
 
     // ----------------- GET ALL COUNTRIES (PAGINATED) -----------------
     @GetMapping
-    public Page<CountryResponseDTO> getAllCountries(
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size
+    public Page<CountryResponseDTO> getAllCountriesByPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name") String sortBy
     ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
-        return countryService.getAllCountries(pageable);
+        return countryService.getAllCountries(PageRequest.of(page, size, Sort.by(sortBy)));
     }
-
 
     // ----------------- GET COUNTRY BY ID -----------------
     @GetMapping("/{id}")
@@ -45,9 +42,10 @@ public class CountryController {
     // ----------------- CREATE COUNTRY -----------------
     @PostMapping
     public CountryResponseDTO createCountry(
-            @RequestBody CountryRequestDTO dto
+            @RequestBody CountryRequestDTO dto,
+            @RequestParam Continent continent
     ) {
-        return countryService.createCountry(dto);
+        return countryService.createCountry(dto, continent);
     }
 
     // ----------------- UPDATE COUNTRY -----------------

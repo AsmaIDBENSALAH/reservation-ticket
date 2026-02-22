@@ -9,14 +9,16 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 @Repository
 public interface CityRepository extends JpaRepository<City, UUID> {
-    Page<City> findByActiveTrueOrderByCreatedAtDesc(Pageable pageable);
-
+    // Pagination et seulement les villes actives
+    Page<City> findByActiveTrue(Pageable pageable);
     Optional<City> findByName(String name);
 
     Optional<City> findById(UUID idCity);
 
     List<City> findByCountryId(UUID countryId);
+
+    Page<City> findByActiveTrueAndNameContainingIgnoreCase(String keyword, Pageable pageable);
+
 }
