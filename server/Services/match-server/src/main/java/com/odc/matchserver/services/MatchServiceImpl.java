@@ -35,7 +35,7 @@ public class MatchServiceImpl implements MatchService {
 
         @Override
         public Page<MatchResponseDTO> getAllMatches(Pageable pageable) {
-                return matchRepository.findAll(pageable)
+                return matchRepository.findAllByOrderByCreatedAtDesc(pageable)
                                 .map(matchMapper::toResponseDTO);
         }
 

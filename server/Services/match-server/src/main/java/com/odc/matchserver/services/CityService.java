@@ -17,7 +17,7 @@ public interface CityService {
 
     CityResponseDTO createCity(CityRequestDTO dto);
 
-    CityResponseDTO updateCity(UUID id, CityRequestDTO dto, UUID countryId);
+    CityResponseDTO updateCity(UUID id, CityRequestDTO dto);
 
     void deleteCity(UUID id);
 }

@@ -1,7 +1,12 @@
 export interface City {
   id: string;
   name: string;
-  countryName: string;
+  countryId?: string;
+  countryName?: string;
+  country?: {
+    id: string;
+    name: string;
+  };
   createdAt: string;
   updatedAt: string;
   active: boolean;

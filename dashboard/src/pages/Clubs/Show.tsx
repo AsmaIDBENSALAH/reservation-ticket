@@ -4,8 +4,9 @@ import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import ComponentCard from "../../components/common/ComponentCard";
 import PaginatedTable from "../../components/tables/PaginatedTable";
+import Button from "../../components/ui/button/Button";
 import { useAppDispatch } from "../../store/hooks";
-import { type Club, fetchClubs } from "./Create";
+import { deleteClub, type Club, fetchClubs } from "./Create";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -16,6 +17,7 @@ export default function Show() {
   const [list, setList] = useState<Club[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
     page: 0,
     size: ITEMS_PER_PAGE,
@@ -58,11 +60,46 @@ export default function Show() {
     void loadClubs(nextPage, pagination.size || ITEMS_PER_PAGE);
   };
 
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this club?")) {
+      return;
+    }
+
+    setDeletingId(id);
+    const resultAction = await dispatch(deleteClub(id));
+    setDeletingId(null);
+
+    if (!deleteClub.fulfilled.match(resultAction)) {
+      setError((resultAction.payload as string) ?? resultAction.error.message ?? "Failed to delete club");
+      return;
+    }
+
+    await loadClubs(pagination.page, pagination.size || ITEMS_PER_PAGE);
+  };
+
   const columns = [
     { header: "Name", render: (row: Club) => row.name },
     { header: "Abbreviation", render: (row: Club) => row.abbreviation },
     { header: "Country", render: (row: Club) => row.country?.name ?? "-" },
     { header: "Founding Year", render: (row: Club) => row.foundingYear },
+    {
+      header: "Actions",
+      render: (row: Club) => (
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={() => navigate(`/clubs/edit/${row.id}`)}>
+            Edit
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void handleDelete(row.id)}
+            disabled={loading || deletingId === row.id}
+          >
+            Delete
+          </Button>
+        </div>
+      ),
+    },
   ];
 
   return (

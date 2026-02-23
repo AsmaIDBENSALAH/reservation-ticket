@@ -1,6 +1,5 @@
 package com.odc.matchserver.repositories;
 
-import com.odc.matchserver.entities.City;
 import com.odc.matchserver.entities.Country;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

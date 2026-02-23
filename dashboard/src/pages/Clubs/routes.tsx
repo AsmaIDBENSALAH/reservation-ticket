@@ -7,5 +7,6 @@ export const clubroutes = (
     <Route path="/club" element={<Navigate to="/clubs" replace />} />
     <Route path="/clubs" element={<Show />} />
     <Route path="/clubs/create" element={<Create />} />
+    <Route path="/clubs/edit/:id" element={<Create />} />
   </>
 )

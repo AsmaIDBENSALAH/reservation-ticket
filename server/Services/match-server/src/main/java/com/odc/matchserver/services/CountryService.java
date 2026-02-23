@@ -3,7 +3,6 @@ package com.odc.matchserver.services;
 
 import com.odc.matchserver.dto.CountryRequestDTO;
 import com.odc.matchserver.dto.CountryResponseDTO;
-import com.odc.matchserver.enums.Continent;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -25,7 +24,7 @@ public interface CountryService {
     CountryResponseDTO createCountry(CountryRequestDTO dto);
 
     // ----------------- UPDATE COUNTRY -----------------
-    CountryResponseDTO updateCountry(UUID id, CountryRequestDTO dto, Continent continent);
+    CountryResponseDTO updateCountry(UUID id, CountryRequestDTO dto);
 
     void deleteCountry(UUID id);
 }

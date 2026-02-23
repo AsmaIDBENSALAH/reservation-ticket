@@ -11,7 +11,6 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 
 @RestController
 @RequestMapping("/api/cities")
@@ -40,11 +39,10 @@ public class CityController {
         return cityService.createCity(dto);
     }
 
-    @PutMapping("/{id}/{countryId}")
+    @PutMapping("/{id}")
     public CityResponseDTO updateCity(@PathVariable UUID id,
-            @PathVariable UUID countryId,
             @RequestBody CityRequestDTO dto) {
-        return cityService.updateCity(id, dto, countryId);
+        return cityService.updateCity(id, dto);
     }
 
     @DeleteMapping("/{id}")

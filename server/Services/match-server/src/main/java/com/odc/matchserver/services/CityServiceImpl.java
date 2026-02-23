@@ -51,12 +51,12 @@ public class CityServiceImpl implements CityService {
     }
 
     @Override
-    public CityResponseDTO updateCity(UUID id, CityRequestDTO dto, UUID countryId) {
+    public CityResponseDTO updateCity(UUID id, CityRequestDTO dto) {
         City city = cityRepository.findById(id)
                 .orElseThrow(() -> new CityNotFoundException("City with id " + id + " not found"));
 
-        Country country = countryRepository.findById(countryId)
-                .orElseThrow(() -> new CountryNotFoundException("Country with id " + countryId + " not found"));
+        Country country = countryRepository.findById(dto.getCountryId())
+                .orElseThrow(() -> new CountryNotFoundException("Country with id " + dto.getCountryId() + " not found"));
 
         city.setName(dto.getName());
         city.setCountry(country);

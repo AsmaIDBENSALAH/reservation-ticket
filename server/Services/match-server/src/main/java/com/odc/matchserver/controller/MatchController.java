@@ -25,12 +25,9 @@ public class MatchController {
     @GetMapping
     public Page<MatchResponseDTO> getAllMatches(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "dateTime") String sortBy
-    ) {
+            @RequestParam(defaultValue = "10") int size) {
         return matchService.getAllMatches(
-                PageRequest.of(page, size, Sort.by(sortBy))
-        );
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "dateTime")));
     }
 
     // ----------------- GET MATCH BY ID -----------------
@@ -49,8 +46,7 @@ public class MatchController {
     @PutMapping("/{id}")
     public MatchResponseDTO updateMatch(
             @PathVariable UUID id,
-            @RequestBody MatchRequestDTO dto
-    ) {
+            @RequestBody MatchRequestDTO dto) {
         return matchService.updateMatch(id, dto);
     }
 
@@ -71,8 +67,7 @@ public class MatchController {
     public void decreaseAvailability(
             @PathVariable UUID matchId,
             @PathVariable UUID zoneId,
-            @RequestParam int quantity
-    ) {
+            @RequestParam int quantity) {
         matchService.decreaseAvailability(matchId, zoneId, quantity);
     }
 
@@ -81,8 +76,7 @@ public class MatchController {
     public void increaseAvailability(
             @PathVariable UUID matchId,
             @PathVariable UUID zoneId,
-            @RequestParam int quantity
-    ) {
+            @RequestParam int quantity) {
         matchService.increaseAvailability(matchId, zoneId, quantity);
     }
 
@@ -92,12 +86,10 @@ public class MatchController {
             @PathVariable UUID competitionId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "dateTime") String sortBy
-    ) {
+            @RequestParam(defaultValue = "dateTime") String sortBy) {
         return matchService.getMatchesByCompetition(
                 competitionId,
-                PageRequest.of(page, size, Sort.by(sortBy))
-        );
+                PageRequest.of(page, size, Sort.by(sortBy)));
     }
 
     // ----------------- FILTER BY STADIUM -----------------
@@ -106,12 +98,10 @@ public class MatchController {
             @PathVariable UUID stadiumId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "dateTime") String sortBy
-    ) {
+            @RequestParam(defaultValue = "dateTime") String sortBy) {
         return matchService.getMatchesByStadium(
                 stadiumId,
-                PageRequest.of(page, size, Sort.by(sortBy))
-        );
+                PageRequest.of(page, size, Sort.by(sortBy)));
     }
 
     // ----------------- FILTER BY DATE RANGE -----------------
@@ -121,12 +111,10 @@ public class MatchController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "dateTime") String sortBy
-    ) {
+            @RequestParam(defaultValue = "dateTime") String sortBy) {
         return matchService.getMatchesByDateRange(
                 from,
                 to,
-                PageRequest.of(page, size, Sort.by(sortBy))
-        );
+                PageRequest.of(page, size, Sort.by(sortBy)));
     }
 }

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { AxiosError } from "axios";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import ComponentCard from "../../components/common/ComponentCard";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
@@ -82,14 +82,59 @@ export const createClub = createAsyncThunk(
   },
 );
 
+export const fetchClubById = createAsyncThunk(
+  "clubs/fetchClubById",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.get<Club>(`/api/teams/${id}`);
+      return data;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  },
+);
+
+export const updateClub = createAsyncThunk(
+  "clubs/updateClub",
+  async ({ id, payload }: { id: string; payload: CreateClubPayload }, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.put<Club>(`/api/teams/${id}`, payload);
+      return data;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  },
+);
+
+export const deleteClub = createAsyncThunk(
+  "clubs/deleteClub",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await axiosInstance.delete(`/api/teams/${id}`);
+      return id;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  },
+);
+
 const Create = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditMode = Boolean(id);
   const dispatch = useAppDispatch();
   const { list: countries } = useAppSelector((state) => state.countries);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectKey, setSelectKey] = useState(0);
+  const [pageLoading, setPageLoading] = useState(false);
+  const [initialName, setInitialName] = useState("");
+  const [initialAbbreviation, setInitialAbbreviation] = useState("");
+  const [initialLogoUrl, setInitialLogoUrl] = useState("");
+  const [initialDescription, setInitialDescription] = useState("");
+  const [initialFoundingYear, setInitialFoundingYear] = useState("");
+  const [initialCountryId, setInitialCountryId] = useState("");
 
   const [name, setName] = useState("");
   const [abbreviation, setAbbreviation] = useState("");
@@ -101,6 +146,49 @@ const Create = () => {
   useEffect(() => {
     void dispatch(fetchCountries({ page: 0, size: 1000 }));
   }, [dispatch]);
+
+  useEffect(() => {
+    if (!isEditMode || !id) {
+      return;
+    }
+
+    const loadClub = async () => {
+      setPageLoading(true);
+      setError(null);
+      const resultAction = await dispatch(fetchClubById(id));
+      setPageLoading(false);
+
+      if (!fetchClubById.fulfilled.match(resultAction)) {
+        setError((resultAction.payload as string) ?? resultAction.error.message ?? "Failed to load club");
+        return;
+      }
+
+      const payload = resultAction.payload;
+      const loadedName = payload.name ?? "";
+      const loadedAbbreviation = payload.abbreviation ?? "";
+      const loadedLogoUrl = payload.logoUrl ?? "";
+      const loadedDescription = payload.description ?? "";
+      const loadedFoundingYear = String(payload.foundingYear ?? "");
+      const loadedCountryId = payload.country?.id ?? "";
+
+      setName(loadedName);
+      setAbbreviation(loadedAbbreviation);
+      setLogoUrl(loadedLogoUrl);
+      setDescription(loadedDescription);
+      setFoundingYear(loadedFoundingYear);
+      setCountryId(loadedCountryId);
+
+      setInitialName(loadedName);
+      setInitialAbbreviation(loadedAbbreviation);
+      setInitialLogoUrl(loadedLogoUrl);
+      setInitialDescription(loadedDescription);
+      setInitialFoundingYear(loadedFoundingYear);
+      setInitialCountryId(loadedCountryId);
+      setSelectKey((previous) => previous + 1);
+    };
+
+    void loadClub();
+  }, [dispatch, id, isEditMode]);
 
   const countryOptions = useMemo(
     () => countries.map((country) => ({ value: country.id, label: country.name })),
@@ -125,36 +213,60 @@ const Create = () => {
     setLoading(true);
     setError(null);
 
-    const resultAction = await dispatch(
-      createClub({
-        name: name.trim(),
-        abbreviation: abbreviation.trim(),
-        logoUrl: logoUrl.trim(),
-        description: description.trim(),
-        type: "CLUB",
-        foundingYear: Number(foundingYear),
-        countryId,
-      }),
-    );
+    const payload = {
+      name: name.trim(),
+      abbreviation: abbreviation.trim(),
+      logoUrl: logoUrl.trim(),
+      description: description.trim(),
+      type: "CLUB" as const,
+      foundingYear: Number(foundingYear),
+      countryId,
+    };
+
+    const resultAction = isEditMode && id
+      ? await dispatch(updateClub({ id, payload }))
+      : await dispatch(createClub(payload));
 
     setLoading(false);
 
-    if (createClub.fulfilled.match(resultAction)) {
+    const isSuccess = isEditMode
+      ? updateClub.fulfilled.match(resultAction)
+      : createClub.fulfilled.match(resultAction);
+
+    if (isSuccess) {
       resetForm();
       navigate("/clubs");
       return;
     }
 
-    setError((resultAction.payload as string) ?? resultAction.error.message ?? "Failed to create club");
+    const actionError = resultAction as { payload?: unknown; error?: { message?: string } };
+    setError((actionError.payload as string) ?? actionError.error?.message ?? "Failed to save club");
   };
+
+  const isFormValid = Boolean(name.trim() && abbreviation.trim() && countryId && foundingYear.trim());
+  const hasChanges = isEditMode
+    ? name.trim() !== initialName.trim() ||
+      abbreviation.trim() !== initialAbbreviation.trim() ||
+      logoUrl.trim() !== initialLogoUrl.trim() ||
+      description.trim() !== initialDescription.trim() ||
+      foundingYear.trim() !== initialFoundingYear.trim() ||
+      countryId !== initialCountryId
+    : true;
+  const isSubmitDisabled = loading || pageLoading || !isFormValid || !hasChanges;
 
   return (
     <>
-      <PageMeta title="Create Club | chritickets" description="Create club" />
-      <PageBreadcrumb pageTitle="Create Club" />
+      <PageMeta
+        title={`${isEditMode ? "Edit Club" : "Create Club"} | chritickets`}
+        description={isEditMode ? "Edit club" : "Create club"}
+      />
+      <PageBreadcrumb pageTitle={isEditMode ? "Edit Club" : "Create Club"} />
 
       <div className="space-y-6">
-        <ComponentCard title="Create Club">
+        <ComponentCard title={isEditMode ? "Edit Club" : "Create Club"}>
+          {pageLoading ? (
+            <p className="text-sm text-gray-500">Loading club...</p>
+          ) : (
           <div className="space-y-6">
             <div>
               <Label>Name</Label>
@@ -218,11 +330,12 @@ const Create = () => {
               <Button variant="outline" onClick={() => navigate("/clubs")}>
                 Cancel
               </Button>
-              <Button onClick={() => void handleSubmit()} disabled={loading}>
-                {loading ? "Creating..." : "Create Club"}
+              <Button onClick={() => void handleSubmit()} disabled={isSubmitDisabled}>
+                {loading ? "Saving..." : isEditMode ? "Update Club" : "Create Club"}
               </Button>
             </div>
           </div>
+          )}
         </ComponentCard>
       </div>
     </>

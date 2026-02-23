@@ -10,7 +10,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -23,19 +22,14 @@ public class CompetitionRequestDTO {
     private String name;
 
     private String abbreviation;
-
     private String logoUrl;
 
     @Size(max = 500, message = "La description ne peut pas dépasser 500 caractères")
     private String description;
 
     private TeamType teamType;
-
     private CompetitionScope scope;
 
-    private UUID countryId;
-
-    private Continent continent;
-
-    private List<UUID> countryIds;
+    private UUID countryId; 
+    private Continent continent; 
 }

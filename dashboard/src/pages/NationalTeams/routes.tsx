@@ -7,5 +7,6 @@ export const nationalTeamroutes = (
     <Route path="/national-team" element={<Navigate to="/national-teams" replace />} />
     <Route path="/national-teams" element={<Show />} />
     <Route path="/national-teams/create" element={<Create />} />
+    <Route path="/national-teams/edit/:id" element={<Create />} />
   </>
 )

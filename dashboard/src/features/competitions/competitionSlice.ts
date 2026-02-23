@@ -2,7 +2,10 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { AxiosError } from "axios";
 import {
   createCompetition as createCompetitionRequest,
+  deleteCompetition as deleteCompetitionRequest,
+  getCompetitionById as getCompetitionByIdRequest,
   getCompetitions,
+  updateCompetition as updateCompetitionRequest,
 } from "./competitionService";
 import type { Competition, CreateCompetitionPayload } from "./competitionTypes";
 
@@ -48,6 +51,17 @@ export const fetchCompetitions = createAsyncThunk(
   },
 );
 
+export const fetchCompetitionById = createAsyncThunk(
+  "competitions/fetchCompetitionById",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      return await getCompetitionByIdRequest(id);
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  },
+);
+
 export const createCompetition = createAsyncThunk<
   Competition,
   CreateCompetitionPayload,
@@ -58,6 +72,36 @@ export const createCompetition = createAsyncThunk<
     const { page, size } = getState().competitions.pagination;
     await dispatch(fetchCompetitions({ page, size })).unwrap();
     return createdCompetition;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
+});
+
+export const updateCompetition = createAsyncThunk<
+  Competition,
+  { id: string; payload: CreateCompetitionPayload },
+  { state: { competitions: CompetitionsState } }
+>("competitions/updateCompetition", async ({ id, payload }, { dispatch, getState, rejectWithValue }) => {
+  try {
+    const updatedCompetition = await updateCompetitionRequest(id, payload);
+    const { page, size } = getState().competitions.pagination;
+    await dispatch(fetchCompetitions({ page, size })).unwrap();
+    return updatedCompetition;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
+});
+
+export const deleteCompetition = createAsyncThunk<
+  string,
+  string,
+  { state: { competitions: CompetitionsState } }
+>("competitions/deleteCompetition", async (id, { dispatch, getState, rejectWithValue }) => {
+  try {
+    await deleteCompetitionRequest(id);
+    const { page, size } = getState().competitions.pagination;
+    await dispatch(fetchCompetitions({ page, size })).unwrap();
+    return id;
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
   }
@@ -89,6 +133,17 @@ const competitionSlice = createSlice({
         state.loading = false;
         state.error = (action.payload as string) ?? action.error.message ?? "Failed to fetch competitions";
       })
+      .addCase(fetchCompetitionById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCompetitionById.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(fetchCompetitionById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) ?? action.error.message ?? "Failed to fetch competition";
+      })
       .addCase(createCompetition.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -99,6 +154,28 @@ const competitionSlice = createSlice({
       .addCase(createCompetition.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as string) ?? action.error.message ?? "Failed to create competition";
+      })
+      .addCase(updateCompetition.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateCompetition.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(updateCompetition.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) ?? action.error.message ?? "Failed to update competition";
+      })
+      .addCase(deleteCompetition.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteCompetition.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(deleteCompetition.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) ?? action.error.message ?? "Failed to delete competition";
       });
   },
 });

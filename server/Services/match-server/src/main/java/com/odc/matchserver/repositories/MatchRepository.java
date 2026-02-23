@@ -18,6 +18,8 @@ public interface MatchRepository extends JpaRepository<Match, UUID> {
     // Filtrer par competition
     Page<Match> findByCompetition_Id(UUID competitionId, Pageable pageable);
 
+    Page<Match> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
     // Filtrer par stade
     Page<Match> findByStadium_Id(UUID stadiumId, Pageable pageable);
 

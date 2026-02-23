@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import Badge from "../../components/ui/badge/Badge";
 import Button from "../../components/ui/button/Button";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import ComponentCard from "../../components/common/ComponentCard";
-import { fetchCountries } from "../../features/countries";
+import { deleteCountry, fetchCountries } from "../../features/countries";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 
 const ITEMS_PER_PAGE = 4;
@@ -14,6 +14,7 @@ function Show() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { list, loading, error, pagination } = useAppSelector((state) => state.countries);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     void dispatch(fetchCountries({ page: 0, size: ITEMS_PER_PAGE }));
@@ -46,6 +47,16 @@ function Show() {
     void dispatch(fetchCountries({ page: nextPage, size: pagination.size || ITEMS_PER_PAGE }));
   };
 
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this country?")) {
+      return;
+    }
+
+    setDeletingId(id);
+    await dispatch(deleteCountry(id));
+    setDeletingId(null);
+  };
+
   return (
     <>
       <PageMeta title="Country | chritickets" description="All Country" />
@@ -75,6 +86,23 @@ function Show() {
                     <Badge variant="solid" size="sm" color={continentColor(country.continentName)}>
                       {country.continentName}
                     </Badge>
+                    <div className="mt-4 flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => navigate(`/country/edit/${country.id}`)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => void handleDelete(country.id)}
+                        disabled={loading || deletingId === country.id}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>

@@ -12,9 +12,13 @@ export interface Stadium {
   id: string;
   name: string;
   address: string;
+  cityId?: string;
+  countryId?: string;
   capacity: number;
-  cityName: string;
-  countryName: string;
+  constructionYear?: number;
+  description?: string;
+  cityName?: string;
+  countryName?: string;
   zones: StadiumZone[];
   createdAt: string;
   updatedAt: string;
@@ -43,4 +47,15 @@ export interface CreateStadiumPayload {
   constructionYear?: number;
   description: string;
   zones: CreateStadiumZonePayload[];
+}
+
+export interface UpdateStadiumPayload {
+  id: string;
+  name: string;
+  address: string;
+  cityId: string;
+  countryId: string;
+  capacity: number;
+  constructionYear: number;
+  description: string;
 }

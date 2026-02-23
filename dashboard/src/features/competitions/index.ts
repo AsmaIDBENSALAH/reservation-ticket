@@ -1,5 +1,11 @@
 export { default as competitionsReducer } from "./competitionSlice";
-export { createCompetition, fetchCompetitions } from "./competitionSlice";
+export {
+  createCompetition,
+  deleteCompetition,
+  fetchCompetitionById,
+  fetchCompetitions,
+  updateCompetition,
+} from "./competitionSlice";
 export type {
   Competition,
   CompetitionCountry,

@@ -20,7 +20,7 @@ export interface Competition {
   scope: CompetitionScope;
   country: CompetitionCountry;
   continent: ContinentName;
-  countries: CompetitionCountry[];
+  countries?: CompetitionCountry[];
   createdAt: string;
   updatedAt: string;
   active: boolean;
@@ -29,7 +29,15 @@ export interface Competition {
 export interface PaginatedCompetitionsResponse {
   totalPages: number;
   totalElements: number;
+  pageable?: Record<string, unknown>;
+  first?: boolean;
+  last?: boolean;
+  size?: number;
   content: Competition[];
+  number?: number;
+  sort?: Record<string, unknown>;
+  numberOfElements?: number;
+  empty?: boolean;
 }
 
 export interface CreateCompetitionPayload {
@@ -41,5 +49,4 @@ export interface CreateCompetitionPayload {
   scope: CompetitionScope;
   countryId: string;
   continent: ContinentName;
-  countryIds: string[];
 }

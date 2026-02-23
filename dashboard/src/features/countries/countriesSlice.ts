@@ -1,6 +1,12 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { AxiosError } from "axios";
-import { createCountry as createCountryRequest, getCountries } from "./countriesApi";
+import {
+  createCountry as createCountryRequest,
+  deleteCountry as deleteCountryRequest,
+  getCountries,
+  getCountryById as getCountryByIdRequest,
+  updateCountry as updateCountryRequest,
+} from "./countriesApi";
 import type { Country, CreateCountryPayload } from "./countriesTypes";
 
 interface CountriesPagination {
@@ -40,7 +46,6 @@ const getErrorMessage = (error: unknown): string => {
   return axiosError.response?.data?.message ?? axiosError.message ?? "Unexpected error";
 };
 
-// -------- FETCH COUNTRIES ------------
 export const fetchCountries = createAsyncThunk(
   "countries/fetchCountries",
   async (params: { page?: number; size?: number } | void, { rejectWithValue }) => {
@@ -52,7 +57,17 @@ export const fetchCountries = createAsyncThunk(
   },
 );
 
-// -------- CREATE COUNTRY ------------
+export const fetchCountryById = createAsyncThunk(
+  "countries/fetchCountryById",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      return await getCountryByIdRequest(id);
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  },
+);
+
 export const createCountry = createAsyncThunk<
   Country,
   CreateCountryPayload,
@@ -62,10 +77,45 @@ export const createCountry = createAsyncThunk<
   async (payload, { dispatch, getState, rejectWithValue }) => {
     try {
       const createdCountry = await createCountryRequest(payload);
-      // Recharge la page actuelle après création
       const { page, size } = getState().countries.pagination;
       await dispatch(fetchCountries({ page, size })).unwrap();
       return createdCountry;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+
+export const updateCountry = createAsyncThunk<
+  Country,
+  { id: string; payload: CreateCountryPayload },
+  { state: { countries: CountriesState } }
+>(
+  "countries/updateCountry",
+  async ({ id, payload }, { dispatch, getState, rejectWithValue }) => {
+    try {
+      const updatedCountry = await updateCountryRequest(id, payload);
+      const { page, size } = getState().countries.pagination;
+      await dispatch(fetchCountries({ page, size })).unwrap();
+      return updatedCountry;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+
+export const deleteCountry = createAsyncThunk<
+  string,
+  string,
+  { state: { countries: CountriesState } }
+>(
+  "countries/deleteCountry",
+  async (id, { dispatch, getState, rejectWithValue }) => {
+    try {
+      await deleteCountryRequest(id);
+      const { page, size } = getState().countries.pagination;
+      await dispatch(fetchCountries({ page, size })).unwrap();
+      return id;
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
     }
@@ -100,6 +150,17 @@ const countriesSlice = createSlice({
         state.loading = false;
         state.error = (action.payload as string) ?? action.error.message ?? "Failed to fetch countries";
       })
+      .addCase(fetchCountryById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCountryById.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(fetchCountryById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) ?? action.error.message ?? "Failed to fetch country";
+      })
       .addCase(createCountry.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -110,6 +171,28 @@ const countriesSlice = createSlice({
       .addCase(createCountry.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as string) ?? action.error.message ?? "Failed to create country";
+      })
+      .addCase(updateCountry.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateCountry.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(updateCountry.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) ?? action.error.message ?? "Failed to update country";
+      })
+      .addCase(deleteCountry.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteCountry.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(deleteCountry.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) ?? action.error.message ?? "Failed to delete country";
       });
   },
 });

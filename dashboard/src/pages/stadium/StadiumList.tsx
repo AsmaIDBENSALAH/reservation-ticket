@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import ComponentCard from "../../components/common/ComponentCard";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import PaginatedTable from "../../components/tables/PaginatedTable";
-import { fetchStadiums } from "../../features/stadiums";
+import Button from "../../components/ui/button/Button";
+import { deleteStadium, fetchStadiums } from "../../features/stadiums";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 
 const ITEMS_PER_PAGE = 10;
@@ -13,6 +14,7 @@ const StadiumList = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { list, loading, error, pagination } = useAppSelector((state) => state.stadiums);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     void dispatch(
@@ -31,13 +33,41 @@ const StadiumList = () => {
     void dispatch(fetchStadiums({ page: nextPage, size: pagination.size || ITEMS_PER_PAGE }));
   };
 
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this stadium?")) {
+      return;
+    }
+
+    setDeletingId(id);
+    await dispatch(deleteStadium(id));
+    setDeletingId(null);
+  };
+
   const columns = [
     { header: "Name", render: (row: (typeof list)[number]) => row.name },
     { header: "Address", render: (row: (typeof list)[number]) => row.address },
     { header: "Capacity", render: (row: (typeof list)[number]) => row.capacity },
-    { header: "City", render: (row: (typeof list)[number]) => row.cityName },
-    { header: "Country", render: (row: (typeof list)[number]) => row.countryName },
+    { header: "City", render: (row: (typeof list)[number]) => row.cityName ?? "-" },
+    { header: "Country", render: (row: (typeof list)[number]) => row.countryName ?? "-" },
     { header: "Zones", render: (row: (typeof list)[number]) => row.zones.length },
+    {
+      header: "Actions",
+      render: (row: (typeof list)[number]) => (
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={() => navigate(`/stadiums/edit/${row.id}`)}>
+            Edit
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void handleDelete(row.id)}
+            disabled={loading || deletingId === row.id}
+          >
+            Delete
+          </Button>
+        </div>
+      ),
+    },
   ];
 
   return (

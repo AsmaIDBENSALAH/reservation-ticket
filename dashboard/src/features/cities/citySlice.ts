@@ -1,6 +1,12 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { AxiosError } from "axios";
-import { createCity as createCityRequest, getCities } from "./cityService";
+import {
+  createCity as createCityRequest,
+  deleteCity as deleteCityRequest,
+  getCities,
+  getCityById as getCityByIdRequest,
+  updateCity as updateCityRequest,
+} from "./cityService";
 import type { City, CreateCityPayload } from "./cityTypes";
 
 interface CitiesPagination {
@@ -63,6 +69,47 @@ export const createCity = createAsyncThunk<
   }
 });
 
+export const fetchCityById = createAsyncThunk(
+  "cities/fetchCityById",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      return await getCityByIdRequest(id);
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  },
+);
+
+export const updateCity = createAsyncThunk<
+  City,
+  { id: string; payload: CreateCityPayload },
+  { state: { cities: CitiesState } }
+>("cities/updateCity", async ({ id, payload }, { dispatch, getState, rejectWithValue }) => {
+  try {
+    const updatedCity = await updateCityRequest(id, payload);
+    const { page, size } = getState().cities.pagination;
+    await dispatch(fetchCities({ page, size })).unwrap();
+    return updatedCity;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
+});
+
+export const deleteCity = createAsyncThunk<
+  string,
+  string,
+  { state: { cities: CitiesState } }
+>("cities/deleteCity", async (id, { dispatch, getState, rejectWithValue }) => {
+  try {
+    await deleteCityRequest(id);
+    const { page, size } = getState().cities.pagination;
+    await dispatch(fetchCities({ page, size })).unwrap();
+    return id;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
+});
+
 const citySlice = createSlice({
   name: "cities",
   initialState,
@@ -99,6 +146,39 @@ const citySlice = createSlice({
       .addCase(createCity.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as string) ?? action.error.message ?? "Failed to create city";
+      })
+      .addCase(fetchCityById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCityById.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(fetchCityById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) ?? action.error.message ?? "Failed to fetch city";
+      })
+      .addCase(updateCity.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateCity.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(updateCity.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) ?? action.error.message ?? "Failed to update city";
+      })
+      .addCase(deleteCity.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteCity.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(deleteCity.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) ?? action.error.message ?? "Failed to delete city";
       });
   },
 });

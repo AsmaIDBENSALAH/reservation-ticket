@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import ComponentCard from "../../components/common/ComponentCard";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import PaginatedTable from "../../components/tables/PaginatedTable";
-import { fetchCities } from "../../features/cities";
+import Button from "../../components/ui/button/Button";
+import { deleteCity, fetchCities } from "../../features/cities";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 
 const ITEMS_PER_PAGE = 10;
@@ -13,6 +14,7 @@ const CityList = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { list, loading, error, pagination } = useAppSelector((state) => state.cities);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     void dispatch(fetchCities({ page: 0, size: ITEMS_PER_PAGE }));
@@ -26,9 +28,37 @@ const CityList = () => {
     void dispatch(fetchCities({ page: nextPage, size: pagination.size || ITEMS_PER_PAGE }));
   };
 
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this city?")) {
+      return;
+    }
+
+    setDeletingId(id);
+    await dispatch(deleteCity(id));
+    setDeletingId(null);
+  };
+
   const columns = [
     { header: "Name", render: (row: (typeof list)[number]) => row.name },
-    { header: "Country", render: (row: (typeof list)[number]) => row.countryName },
+    { header: "Country", render: (row: (typeof list)[number]) => row.countryName ?? row.country?.name ?? "-" },
+    {
+      header: "Actions",
+      render: (row: (typeof list)[number]) => (
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={() => navigate(`/cities/edit/${row.id}`)}>
+            Edit
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void handleDelete(row.id)}
+            disabled={loading || deletingId === row.id}
+          >
+            Delete
+          </Button>
+        </div>
+      ),
+    },
   ];
 
   return (

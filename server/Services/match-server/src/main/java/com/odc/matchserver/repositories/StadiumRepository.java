@@ -12,6 +12,8 @@ import java.util.UUID;
 @Repository
 public interface StadiumRepository extends JpaRepository<Stadium, UUID> {
 
+    Page<Stadium> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
     Page<Stadium> findByCity_Id(UUID cityId, Pageable pageable);
 
     Page<Stadium> findByCountry_Id(UUID countryId, Pageable pageable);

@@ -1,7 +1,13 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { AxiosError } from "axios";
-import { createStadium as createStadiumRequest, getStadiums } from "./stadiumService";
-import type { CreateStadiumPayload, Stadium } from "./stadiumTypes";
+import {
+  createStadium as createStadiumRequest,
+  deleteStadium as deleteStadiumRequest,
+  getStadiumById as getStadiumByIdRequest,
+  getStadiums,
+  updateStadium as updateStadiumRequest,
+} from "./stadiumService";
+import type { CreateStadiumPayload, Stadium, UpdateStadiumPayload } from "./stadiumTypes";
 
 interface StadiumsPagination {
   page: number;
@@ -45,6 +51,17 @@ export const fetchStadiums = createAsyncThunk(
   },
 );
 
+export const fetchStadiumById = createAsyncThunk(
+  "stadiums/fetchStadiumById",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      return await getStadiumByIdRequest(id);
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  },
+);
+
 export const createStadium = createAsyncThunk<
   Stadium,
   CreateStadiumPayload,
@@ -55,6 +72,36 @@ export const createStadium = createAsyncThunk<
     const { page, size } = getState().stadiums.pagination;
     await dispatch(fetchStadiums({ page, size })).unwrap();
     return createdStadium;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
+});
+
+export const updateStadium = createAsyncThunk<
+  Stadium,
+  { id: string; payload: UpdateStadiumPayload },
+  { state: { stadiums: StadiumsState } }
+>("stadiums/updateStadium", async ({ id, payload }, { dispatch, getState, rejectWithValue }) => {
+  try {
+    const updatedStadium = await updateStadiumRequest(id, payload);
+    const { page, size } = getState().stadiums.pagination;
+    await dispatch(fetchStadiums({ page, size })).unwrap();
+    return updatedStadium;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
+});
+
+export const deleteStadium = createAsyncThunk<
+  string,
+  string,
+  { state: { stadiums: StadiumsState } }
+>("stadiums/deleteStadium", async (id, { dispatch, getState, rejectWithValue }) => {
+  try {
+    await deleteStadiumRequest(id);
+    const { page, size } = getState().stadiums.pagination;
+    await dispatch(fetchStadiums({ page, size })).unwrap();
+    return id;
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
   }
@@ -86,6 +133,17 @@ const stadiumSlice = createSlice({
         state.loading = false;
         state.error = (action.payload as string) ?? action.error.message ?? "Failed to fetch stadiums";
       })
+      .addCase(fetchStadiumById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchStadiumById.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(fetchStadiumById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) ?? action.error.message ?? "Failed to fetch stadium";
+      })
       .addCase(createStadium.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -96,6 +154,28 @@ const stadiumSlice = createSlice({
       .addCase(createStadium.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as string) ?? action.error.message ?? "Failed to create stadium";
+      })
+      .addCase(updateStadium.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateStadium.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(updateStadium.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) ?? action.error.message ?? "Failed to update stadium";
+      })
+      .addCase(deleteStadium.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteStadium.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(deleteStadium.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) ?? action.error.message ?? "Failed to delete stadium";
       });
   },
 });

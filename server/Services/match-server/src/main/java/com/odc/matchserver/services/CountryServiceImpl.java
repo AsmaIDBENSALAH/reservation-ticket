@@ -4,7 +4,6 @@ package com.odc.matchserver.services;
 import com.odc.matchserver.dto.CountryRequestDTO;
 import com.odc.matchserver.dto.CountryResponseDTO;
 import com.odc.matchserver.entities.Country;
-import com.odc.matchserver.enums.Continent;
 import com.odc.matchserver.exceptions.CountryNotFoundException;
 import com.odc.matchserver.mapper.CountryMapper;
 import com.odc.matchserver.repositories.CountryRepository;
@@ -61,14 +60,14 @@ public class CountryServiceImpl implements CountryService {
 
     // ----------------- UPDATE COUNTRY -----------------
     @Override
-    public CountryResponseDTO updateCountry(UUID id, CountryRequestDTO dto, Continent continent) {
+    public CountryResponseDTO updateCountry(UUID id, CountryRequestDTO dto) {
         Country country = countryRepository.findById(id)
                 .orElseThrow(() -> new CountryNotFoundException("Country with id " + id + " not found"));
 
-        if (continent == null) throw new IllegalArgumentException("Continent must be provided");
+        if (dto.getContinentName() == null) throw new IllegalArgumentException("Continent must be provided");
 
         country.setName(dto.getName());
-        country.setContinent(continent);
+        country.setContinent(dto.getContinentName());
 
         Country updated = countryRepository.save(country);
         return CountryMapper.toResponseDTO(updated);
