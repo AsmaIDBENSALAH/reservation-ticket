@@ -24,6 +24,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/competitions/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/stadiums/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/teams/**").permitAll()
+                        .requestMatchers("/api/matches/clt/**").permitAll()
 
                         // 🔒 Rôles spécifiques
                         .requestMatchers(HttpMethod.POST, "/api/matches/**").hasRole("ADMIN")

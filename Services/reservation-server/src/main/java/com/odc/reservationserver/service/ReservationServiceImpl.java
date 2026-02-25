@@ -6,6 +6,7 @@ import com.odc.reservationserver.dto.ReservationRequestDTO;
 import com.odc.reservationserver.dto.ReservationResponseDTO;
 import com.odc.reservationserver.dto.events.PaymentRequestEvent;
 import com.odc.reservationserver.dto.events.PaymentResponseEvent;
+import com.odc.reservationserver.dto.events.ReservationConfirmedEvent;
 import com.odc.reservationserver.entities.Reservation;
 import com.odc.reservationserver.entities.Ticket;
 import com.odc.reservationserver.enums.ReservationStatus;
@@ -23,6 +24,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -37,53 +39,165 @@ public class ReservationServiceImpl implements ReservationService {
     private final TicketRepository ticketRepository;
     private final MatchFeignClient matchFeignClient;
     private final ReservationMapper reservationMapper;
-    private final KafkaTemplate<String, Object> kafkaTemplate; // 👈 AJOUTÉ
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    /* =========================
-       CREATE RESERVATION
-       ========================= */
+    @Override
     public ReservationResponseDTO createReservation(ReservationRequestDTO dto) {
 
-        // 1️⃣ Vérifier le match + zone via match-service
+        // 1️⃣ Récupérer les détails du match
         MatchDetailsDTO matchDetails = matchFeignClient.getMatchDetails(dto.getMatchId());
 
+        // 2️⃣ Trouver la zone demandée
         MatchZoneDTO selectedZone = matchDetails.getZones().stream()
-                .filter(z -> z.getZoneId().equals(dto.getStadiumZoneId()))
+                .filter(z -> z.getZoneId().equals(dto.getMatchZonePricingId()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Zone invalide pour ce match"));
+                .orElseThrow(() -> new RuntimeException("L'offre de zone sélectionnée n'existe pas pour ce match"));
 
+        // 3️⃣ Vérifier la disponibilité
         if (selectedZone.getAvailableSeats() < dto.getQuantity()) {
-            throw new RuntimeException("Places insuffisantes.");
+            throw new RuntimeException("Places insuffisantes pour cette zone.");
         }
 
-        // 2️⃣ Décrémenter via Feign
-        matchFeignClient.decreaseAvailability(dto.getMatchId(), dto.getStadiumZoneId(), dto.getQuantity());
+        // 4️⃣ Décrémenter la disponibilité
+        matchFeignClient.decreaseAvailability(dto.getMatchId(), dto.getMatchZonePricingId(), dto.getQuantity());
 
-        // 3️⃣ Créer la réservation en PENDING
+        // 5️⃣ Créer la réservation avec toutes les données miroir
         Reservation reservation = Reservation.builder()
                 .matchId(dto.getMatchId())
                 .userId(dto.getUserId())
-                .stadiumZoneId(dto.getStadiumZoneId())
-                .porte(dto.getPorte())
+                .userEmail(dto.getUserEmail())
+                .userName(dto.getUserName())
+                .matchZonePricingId(dto.getMatchZonePricingId())
+                .stadiumZoneName(selectedZone.getZoneName())
+                .porte(selectedZone.getPorte())
                 .quantity(dto.getQuantity())
+                .totalPrice(selectedZone.getPrice().multiply(BigDecimal.valueOf(dto.getQuantity())))
                 .status(ReservationStatus.PENDING)
                 .reservationDate(LocalDateTime.now())
+                .stripeToken(dto.getStripeToken())
+                // ✅ Nouvelles données miroir
+                .stadeName(matchDetails.getStadeName())
+                .currency(matchDetails.getCurrency())
+                .homeTeam(matchDetails.getHomeTeam())
+                .awayTeam(matchDetails.getAwayTeam())
+                .competition(matchDetails.getCompetition())
+                .matchDate(matchDetails.getDate())
                 .build();
 
         reservationRepository.save(reservation);
 
-        // 4️⃣ ENVOYER À KAFKA POUR LE PAIEMENT (Nouveauté)
-        // On envoie le token Stripe reçu du Front et le prix total
-        // Remplace la ligne du PaymentRequestEvent par celle-ci :
+        // 6️⃣ Kafka pour le paiement
         PaymentRequestEvent paymentEvent = new PaymentRequestEvent(
                 reservation.getId(),
-                selectedZone.getPrice().multiply(java.math.BigDecimal.valueOf(dto.getQuantity())).doubleValue(),
-                "eur",
-                dto.getStripeToken()
+                reservation.getTotalPrice().doubleValue(),
+                matchDetails.getCurrency(),          // ✅ currency dynamique
+                dto.getStripeToken(),
+                dto.getUserEmail(),
+                dto.getUserName(),
+                dto.getMatchId(),
+                selectedZone.getZoneName(),
+                dto.getQuantity()
         );
         kafkaTemplate.send("payment-request-topic", paymentEvent);
 
         return reservationMapper.toReservationResponseDTO(reservation);
+    }
+    @Override
+    public Page<ReservationResponseDTO> getReservationsByUserId(String userId, Pageable pageable) {
+        return reservationRepository.findByUserIdAndStatusIn(
+                userId,
+                List.of(ReservationStatus.CONFIRMED, ReservationStatus.EXPIRED),
+                pageable
+        ).map(reservationMapper::toReservationResponseDTO);
+    }
+    @Override
+    @Scheduled(fixedRate = 3600000)
+    public void expirePassedMatches() {
+        List<Reservation> confirmedReservations = reservationRepository
+                .findAllByStatusAndMatchDateBefore(ReservationStatus.CONFIRMED, LocalDateTime.now()); // ✅ direct en base
+
+        for (Reservation res : confirmedReservations) {
+            res.setStatus(ReservationStatus.EXPIRED);
+            reservationRepository.save(res);
+            log.info("Réservation expirée (match passé) : {}", res.getId());
+        }
+    }
+
+    @Override
+    public void confirmReservation(UUID reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Reservation not found"));
+
+        if (reservation.getStatus() != ReservationStatus.PENDING) return;
+
+        // Génération des tickets
+        for (int i = 0; i < reservation.getQuantity(); i++) {
+            // Ici on utilise matchZonePricingId pour identifier les sièges occupés par offre
+            Integer seatNumber = findNextAvailableSeat(reservation.getMatchId(), reservation.getMatchZonePricingId());
+            Ticket ticket = Ticket.builder()
+                    .matchId(reservation.getMatchId())
+                    .userId(reservation.getUserId())
+                    .stadiumZoneId(reservation.getMatchZonePricingId())
+                    .seatNumber(seatNumber)
+                    .status(TicketStatus.VALID)
+                    .reservation(reservation)
+                    .qrCode(UUID.randomUUID().toString()) // <-- ajouter ici
+                    .build();
+            ticketRepository.save(ticket);
+        }
+
+        reservation.setStatus(ReservationStatus.CONFIRMED);
+        reservationRepository.save(reservation);
+        ReservationConfirmedEvent event = buildReservationConfirmedEvent(reservation);
+        kafkaTemplate.send("reservation-confirmed-topic", event);
+    }
+
+    private ReservationConfirmedEvent buildReservationConfirmedEvent(Reservation reservation) {
+        return new ReservationConfirmedEvent(
+                reservation.getId(),
+                reservation.getUserId(),
+                reservation.getUserName(),
+                reservation.getUserEmail(),
+                reservation.getMatchId(),
+                reservation.getMatchZonePricingId(),
+                reservation.getStadiumZoneName(),
+                reservation.getQuantity(),
+                reservation.getTotalPrice().doubleValue(),
+                reservation.getStatus().toString(),
+                // ✅ Nouvelles infos
+                reservation.getCurrency(),
+                reservation.getHomeTeam(),
+                reservation.getAwayTeam(),
+                reservation.getCompetition(),
+                reservation.getStadeName(),
+                reservation.getMatchDate()
+        );
+    }
+
+    @Override
+    public void cancelReservation(UUID reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Reservation not found"));
+
+        if (reservation.getStatus() == ReservationStatus.CANCELLED ||
+                reservation.getStatus() == ReservationStatus.EXPIRED) {
+            throw new RuntimeException("Cette réservation ne peut pas être annulée.");
+        }
+
+        if (reservation.getMatchDate() != null && reservation.getMatchDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Impossible d'annuler une réservation pour un match déjà passé.");
+        }
+
+        matchFeignClient.increaseAvailability(
+                reservation.getMatchId(),
+                reservation.getMatchZonePricingId(),
+                reservation.getQuantity()
+        );
+
+        reservation.setStatus(ReservationStatus.CANCELLED);
+        reservationRepository.save(reservation);
+        ReservationConfirmedEvent event = buildReservationConfirmedEvent(reservation);
+        kafkaTemplate.send("reservation-confirmed-topic", event);
     }
     /* =========================
        KAFKA LISTENER : RETOUR DU PAIEMENT
@@ -102,7 +216,7 @@ public class ReservationServiceImpl implements ReservationService {
     /* =========================
        SCHEDULER : ANNULATION AUTO (15 MIN)
        ========================= */
-    @Scheduled(fixedRate = 60000) // Vérifie chaque minute
+    @Scheduled(fixedRate = 60000)
     public void cancelExpiredReservations() {
         LocalDateTime expirationTime = LocalDateTime.now().minusMinutes(15);
         List<Reservation> expiredReservations = reservationRepository
@@ -110,53 +224,33 @@ public class ReservationServiceImpl implements ReservationService {
 
         for (Reservation res : expiredReservations) {
             log.info("Annulation automatique (Timeout 15min) pour : {}", res.getId());
-            this.cancelReservation(res.getId());
+
+            try {
+                matchFeignClient.increaseAvailability(
+                        res.getMatchId(),
+                        res.getMatchZonePricingId(),
+                        res.getQuantity()
+                );
+            } catch (Exception e) {
+                log.error("Impossible d'incrémenter la disponibilité pour : {}", res.getId(), e);
+            }
+
+            res.setStatus(ReservationStatus.CANCELLED);
+            reservationRepository.save(res);
+
+            // ✅ Notifier l'utilisateur par email
+            try {
+                ReservationConfirmedEvent event = buildReservationConfirmedEvent(res);
+                kafkaTemplate.send("reservation-confirmed-topic", event);
+                log.info("Email annulation (timeout) envoyé pour : {}", res.getId());
+            } catch (Exception e) {
+                log.error("Impossible d'envoyer la notification pour : {}", res.getId(), e);
+            }
         }
     }
 
-    /* =========================
-        CONFIRM RESERVATION (Inchangé mais appelé par Kafka)
-        ========================= */
-    public void confirmReservation(UUID reservationId) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new RuntimeException("Reservation not found"));
 
-        if (reservation.getStatus() != ReservationStatus.PENDING) return;
 
-        for (int i = 0; i < reservation.getQuantity(); i++) {
-            Integer seatNumber = findNextAvailableSeat(reservation.getMatchId(), reservation.getStadiumZoneId());
-            Ticket ticket = Ticket.builder()
-                    .matchId(reservation.getMatchId())
-                    .userId(reservation.getUserId())
-                    .stadiumZoneId(reservation.getStadiumZoneId())
-                    .seatNumber(seatNumber)
-                    .status(TicketStatus.VALID)
-                    .reservation(reservation)
-                    .build();
-            ticketRepository.save(ticket);
-        }
-
-        reservation.setStatus(ReservationStatus.CONFIRMED);
-        reservationRepository.save(reservation);
-    }
-    /* =========================
-        CANCEL RESERVATION (Inchangé : libère les places via Feign)
-        ========================= */
-    public void cancelReservation(UUID reservationId) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new RuntimeException("Reservation not found"));
-
-        if (reservation.getStatus() == ReservationStatus.CANCELLED) return;
-
-        matchFeignClient.increaseAvailability(
-                reservation.getMatchId(),
-                reservation.getStadiumZoneId(),
-                reservation.getQuantity()
-        );
-
-        reservation.setStatus(ReservationStatus.CANCELLED);
-        reservationRepository.save(reservation);
-    }
     /* =========================
        PAGINATION
        ========================= */
@@ -168,11 +262,8 @@ public class ReservationServiceImpl implements ReservationService {
     /* =========================
        SEAT MANAGEMENT
        ========================= */
-    private Integer findNextAvailableSeat(UUID matchId, UUID zone) {
-
-        List<Integer> occupiedSeats =
-                ticketRepository.findOccupiedSeatNumbers(matchId, zone);
-
+    private Integer findNextAvailableSeat(UUID matchId, UUID pricingId) {
+        List<Integer> occupiedSeats = ticketRepository.findOccupiedSeatNumbers(matchId, pricingId);
         int seat = 1;
         while (occupiedSeats.contains(seat)) {
             seat++;

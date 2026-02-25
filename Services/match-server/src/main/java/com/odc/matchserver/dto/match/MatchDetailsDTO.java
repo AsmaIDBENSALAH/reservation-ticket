@@ -16,4 +16,8 @@ public class MatchDetailsDTO {
     private String competition;
     private List<MatchZoneDTO> zones;
     private String currency;
+    private String homeTeam;
+    private String awayTeam;
+
+    private String stadeName;
 }

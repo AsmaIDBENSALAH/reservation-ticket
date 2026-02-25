@@ -2,10 +2,10 @@ spring:
   application:
     name: notification-service
   mail:
-    host: smtp.mailtrap.io # Ou smtp.gmail.com
-    port: 2525
-    username: votre_username
-    password: votre_password
+    host: smtp.gmail.com
+    port: 587
+    username: assma.idbensalah2000@gmail.com
+    password: ppke nuwc yltn etay
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
@@ -17,3 +17,9 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: com.odc.notificationserver.dto.ReservationConfirmedEvent
+
+app:
+  mail:
+    from: assma.idbensalah2000@gmail.com

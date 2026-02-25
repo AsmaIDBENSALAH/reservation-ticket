@@ -48,6 +48,17 @@ spring:
             allowCredentials: true
       # --- ROUTES MOVE TO HERE ---
       routes:
+        - id: reservation-server
+          uri: lb://RESERVATION-SERVER
+          predicates:
+            - Path=/api/reservations/**
+          filters:
+            - TokenRelay=
+
+        - id: payment-server
+          uri: lb://PAYMENT-SERVER
+          predicates:
+            - Path=/api/payment/**
         - id: match-server
           uri: lb://MATCH-SERVER
           predicates:
@@ -64,15 +75,7 @@ spring:
                   maxBackoff: 5s
 
 
-        - id: reservation-server
-          uri: lb://RESERVATION-SERVER
-          predicates:
-            - Path=/api/reservations/**
 
-        - id: payment-server
-          uri: lb://PAYMENT-SERVER
-          predicates:
-            - Path=/api/payment/**
 
 
 # Port local du gateway (peut être surchargé)

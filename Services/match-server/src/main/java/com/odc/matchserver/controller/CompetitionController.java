@@ -46,7 +46,7 @@ public class CompetitionController {
             @RequestParam(required = false) UUID countryId,
             @RequestParam(required = false) Continent continent
     ) {
-        return competitionService.createCompetition(dto, countryId, continent);
+        return competitionService.createCompetition(dto);
     }
 
     // ----------------- UPDATE COMPETITION -----------------

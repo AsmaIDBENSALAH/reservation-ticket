@@ -13,11 +13,9 @@ import java.util.UUID;
 public interface CityRepository extends JpaRepository<City, UUID> {
     // Pagination et seulement les villes actives
     Page<City> findByActiveTrue(Pageable pageable);
-    Optional<City> findByName(String name);
 
     Optional<City> findById(UUID idCity);
 
-    List<City> findByCountryId(UUID countryId);
 
     Page<City> findByActiveTrueAndNameContainingIgnoreCase(String keyword, Pageable pageable);
 

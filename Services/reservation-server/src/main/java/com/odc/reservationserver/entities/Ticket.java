@@ -24,7 +24,7 @@ public class Ticket {
     @Column(unique = true, nullable = false)
     private String qrCode;
 
-    private UUID userId;
+    private String userId;
     private UUID matchId;
     private UUID stadiumZoneId;
     private String stadiumZone;

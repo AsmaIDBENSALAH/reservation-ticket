@@ -45,7 +45,7 @@ public class CountryController {
             @RequestBody CountryRequestDTO dto,
             @RequestParam Continent continent
     ) {
-        return countryService.createCountry(dto, continent);
+        return countryService.createCountry(dto);
     }
 
     // ----------------- UPDATE COUNTRY -----------------

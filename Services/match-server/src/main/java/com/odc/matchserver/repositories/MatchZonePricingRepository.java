@@ -9,6 +9,6 @@ import java.util.UUID;
 
 @Repository
 public interface MatchZonePricingRepository extends JpaRepository<MatchZonePricing, UUID> {
-    Optional<MatchZonePricing> findByMatch_IdAndZone_Id(UUID matchId, UUID zoneId);
+    Optional<MatchZonePricing> findByMatch_IdAndId(UUID matchId, UUID id);
 
 }

@@ -13,5 +13,10 @@ public class PaymentRequestEvent {
     private UUID reservationId;
     private Double amount;
     private String currency;
-    private String stripeToken; // Reçu du frontend
+    private String stripeToken;
+    private String userEmail;
+    private String userName;
+    private UUID matchId;
+    private String stadiumZoneName;
+    private Integer quantity;
 }

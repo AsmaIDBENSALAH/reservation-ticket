@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableFeignClients
-@EnableScheduling // 👈 AJOUTE CECI pour activer les 15 minutes d'expiration
+@EnableScheduling
 public class ReservationServerApplication {
 
 	public static void main(String[] args) {
