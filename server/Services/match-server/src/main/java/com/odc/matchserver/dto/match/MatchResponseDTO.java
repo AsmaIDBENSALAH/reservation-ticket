@@ -1,4 +1,5 @@
 package com.odc.matchserver.dto.match;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -7,7 +8,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-
+import com.odc.matchserver.dto.stadium.StadiumSummaryDTO;
+import com.odc.matchserver.dto.team.TeamSummaryDTO;
 
 @Data
 @NoArgsConstructor
@@ -20,9 +22,9 @@ public class MatchResponseDTO {
     private Integer attendance;
     private String referee;
     private String matchImageUrl;
-    private UUID stadiumId;
-    private UUID homeTeamId;
-    private UUID awayTeamId;
+    private StadiumSummaryDTO stadium;
+    private TeamSummaryDTO homeTeam;
+    private TeamSummaryDTO awayTeam;
     private UUID competitionId;
     private List<MatchZonePricingResponseDTO> zonePricings;
 

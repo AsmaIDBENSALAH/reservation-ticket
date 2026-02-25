@@ -8,31 +8,36 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
-@Configuration
 @EnableWebFluxSecurity
+@Configuration
 public class SecurityConfig {
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        http
-                // 1. Disable CSRF (Essential for APIs/React)
+        return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
-
-                // 2. Enable CORS in Security (so it respects your YAML config)
                 .cors(Customizer.withDefaults())
-
                 .authorizeExchange(exchanges -> exchanges
-                        // 3. ALLOW OPTIONS REQUESTS (Fixes the Redirect/CORS error)
+
+                        // ✅ OPTIONS
                         .pathMatchers(HttpMethod.OPTIONS).permitAll()
 
-                        // 4. Authenticate everything else
+                        // ✅ GET publics
+                        .pathMatchers(HttpMethod.GET, "/api/matches/**").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/api/competitions/**").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/api/stadiums/**").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/api/teams/**").permitAll()
+
+                        // 🔒 reste protégé
                         .anyExchange().authenticated()
                 )
-                .oauth2Login(Customizer.withDefaults())
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(Customizer.withDefaults())
-                );
 
-        return http.build();
+                // ❌ SUPPRIMER oauth2Login
+                // .oauth2Login(Customizer.withDefaults())
+
+                // ✅ API JWT seulement
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt())
+
+                .build();
     }
 }

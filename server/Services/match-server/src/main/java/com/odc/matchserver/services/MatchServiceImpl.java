@@ -199,4 +199,10 @@ public class MatchServiceImpl implements MatchService {
                 return matchRepository.findByDateTimeBetween(from, to, pageable)
                                 .map(matchMapper::toResponseDTO);
         }
+
+        @Override
+        public Page<MatchResponseDTO> getMostPopularMatches(Pageable pageable) {
+                return matchRepository.findAllByOrderByAttendanceDesc(pageable)
+                                .map(matchMapper::toResponseDTO);
+        }
 }

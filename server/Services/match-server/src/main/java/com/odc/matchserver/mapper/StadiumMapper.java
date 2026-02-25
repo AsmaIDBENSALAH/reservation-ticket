@@ -17,9 +17,9 @@ public class StadiumMapper {
     public static Stadium toEntity(
             StadiumRequestDTO dto,
             City city,
-            Country country
-    ) {
-        if (dto == null) return null;
+            Country country) {
+        if (dto == null)
+            return null;
 
         Stadium stadium = Stadium.builder()
                 .name(dto.getName())
@@ -32,20 +32,13 @@ public class StadiumMapper {
                 .active(true) // actif par défaut
                 .build();
 
-        // zones
-        if (dto.getZones() != null) {
-            List<StadiumZone> zones = dto.getZones().stream()
-                    .map(z -> StadiumZoneMapper.toEntity(z, stadium))
-                    .collect(Collectors.toList());
-            stadium.setZones(zones);
-        }
-
         return stadium;
     }
 
     // Entity -> MinimalDTO
     public static StadiumMinimalDTO toMinimalDTO(Stadium stadium) {
-        if (stadium == null) return null;
+        if (stadium == null)
+            return null;
 
         return StadiumMinimalDTO.builder()
                 .id(stadium.getId())
@@ -56,8 +49,8 @@ public class StadiumMapper {
                 .countryName(stadium.getCountry() != null ? stadium.getCountry().getName() : null)
                 .zones(stadium.getZones() != null
                         ? stadium.getZones().stream()
-                        .map(StadiumZoneMapper::toMinimalDTO)
-                        .collect(Collectors.toList())
+                                .map(StadiumZoneMapper::toMinimalDTO)
+                                .collect(Collectors.toList())
                         : null)
                 // ---------- HISTORIQUE ----------
                 .createdAt(stadium.getCreatedAt())
@@ -73,8 +66,7 @@ public class StadiumMapper {
             Stadium stadium,
             StadiumUpdateDTO dto,
             City city,
-            Country country
-    ) {
+            Country country) {
         if (dto.getName() != null)
             stadium.setName(dto.getName());
 

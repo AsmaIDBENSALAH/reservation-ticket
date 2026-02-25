@@ -7,6 +7,7 @@ import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
+import NumberInput from "../../components/form/input/NumberInput";
 import Select from "../../components/form/Select";
 import TextArea from "../../components/form/input/TextArea";
 import Button from "../../components/ui/button/Button";
@@ -305,8 +306,7 @@ const Create = () => {
 
             <div>
               <Label>Founding Year</Label>
-              <Input
-                type="number"
+              <NumberInput
                 value={foundingYear}
                 onChange={(e) => setFoundingYear(e.target.value)}
                 placeholder="1990"

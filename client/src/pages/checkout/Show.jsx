@@ -1,30 +1,131 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
 import { CheckBadgeIcon, MapPinIcon } from "@heroicons/react/24/outline";
 import { CalendarDaysIcon } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import keycloak from "@/keycloak";
+import PageReload from "@/components/ui/PageReload";
+import { useTranslation } from "react-i18next";
+import {
+  clearSelectedMatch,
+  fetchMatchById,
+  fetchStadiumById,
+  fetchTeamById,
+  selectAwayTeam,
+  selectHomeTeam,
+  selectMatchesLoading,
+  selectSelectedMatch,
+  selectStadium,
+} from "@/store/slices/matchesSlice";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  CardElement,
+  Elements,
+  useElements,
+  useStripe,
+} from "@stripe/react-stripe-js";
+
+const stripePromise = loadStripe("YOUR_STRIPE_PUBLIC_KEY");
+
+const CheckoutPaymentContent = ({ firstName, lastName, email, t }) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [isPaying, setIsPaying] = useState(false);
+
+  const handlePayment = async (e) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+
+    setIsPaying(true);
+    try {
+      // TODO: replace with real clientSecret from backend
+      const clientSecret = "YOUR_CLIENT_SECRET";
+
+      await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+          billing_details: {
+            name: `${firstName || ""} ${lastName || ""}`.trim(),
+            email: email || "",
+          },
+        },
+      });
+    } finally {
+      setIsPaying(false);
+    }
+  };
+
+  return (
+    <div className="rounded-lg ">
+      <h2 className="text-xl font-bold mb-5">{t("checkout.yourDetails")}</h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+        <div>
+          <label className="block text-xs mb-1.5 text-black">First Name</label>
+          <input
+            type="text"
+            value={firstName || ""}
+            readOnly
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-400 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs mb-1.5 text-black">Last Name</label>
+          <input
+            type="text"
+            value={lastName || ""}
+            readOnly
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-400 text-sm"
+          />
+        </div>
+      </div>
+
+      <div className="mb-6">
+        <label className="block text-xs mb-1.5 text-black">Email Address</label>
+        <input
+          type="email"
+          value={email || ""}
+          readOnly
+          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-400 text-sm"
+        />
+      </div>
+
+      <h3 className="text-lg font-bold mb-4">{t("checkout.payment")}</h3>
+      <div className="mb-5">
+        <div className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-400 text-sm">
+          <CardElement />
+        </div>
+      </div>
+
+      <button
+        onClick={handlePayment}
+        disabled={isPaying || !stripe}
+        className="w-full bg-[#4caf50] hover:bg-[#45a049] text-white font-medium py-3 rounded transition-colors mb-3"
+      >
+        {t("checkout.payNow")}
+      </button>
+
+      <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
+        <span>{t("checkout.guarantee")}</span>
+      </div>
+    </div>
+  );
+};
 
 const Show = () => {
-  const { matchId } = useParams();
-  const navigate = useNavigate();
+  const { id: matchId } = useParams();
+  const dispatch = useDispatch();
+  const { t, i18n } = useTranslation();
   const [timeRemaining, setTimeRemaining] = useState(895); // 14:55
   const [quantity, setQuantity] = useState(2);
-  const [currentStep, setCurrentStep] = useState(1);
-
-  const [formData, setFormData] = useState({
-    email: "",
-    confirmEmail: "",
-    mobile: "",
-    billingType: "personal",
-    firstName: "",
-    lastName: "",
-    address: "",
-    postcode: "",
-    city: "",
-    country: "Morocco",
-    termsAccepted: false,
-    emailOptIn: false,
-    humanVerified: false,
-  });
+  const match = useSelector(selectSelectedMatch);
+  const homeTeam = useSelector(selectHomeTeam);
+  const awayTeam = useSelector(selectAwayTeam);
+  const stadium = useSelector(selectStadium);
+  const loading = useSelector(selectMatchesLoading);
+  const userFirstName = keycloak?.tokenParsed?.given_name;
+  const userLastName = keycloak?.tokenParsed?.family_name;
+  const userEmail = keycloak?.tokenParsed?.email;
 
   // Timer
   useEffect(() => {
@@ -40,68 +141,58 @@ const Show = () => {
     return `${minutes}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const allMatchData = {
-    "champions-league-1": {
-      teamHome: "Tottenham Hotspur",
-      teamAway: "Borussia Dortmund",
-      competition: "UEFA Champions League",
-      date: "Saturday, 20th January 2026 20:45",
-      venue: "Tottenham Hotspur Stadium, London, England",
-      price: 85,
-      section: "BLOCK 1-74 - MILBURN STAND UPPER",
-    },
-    "premier-league-1": {
-      teamHome: "Newcastle United",
-      teamAway: "Brentford",
-      competition: "ENGLISH PREMIER LEAGUE",
-      date: "Saturday, 7th February 2026 17:30",
-      venue: "St James Park, Newcastle Upon Tyne, United Kingdom",
-      price: 84.72,
-      section: "BLOCK L43 - MILBURN STAND UPPER",
-    },
-    "premier-league-2": {
-      teamHome: "Arsenal",
-      teamAway: "Chelsea",
-      competition: "Premier League",
-      date: "Saturday, 22nd February 2026 17:30",
-      venue: "Emirates Stadium, London, England",
-      price: 92,
-      section: "BLOCK 1-74 - MILBURN STAND UPPER",
-    },
+  const formatMatchDate = (dateTime) => {
+    if (!dateTime) return "";
+    return new Date(dateTime).toLocaleDateString(i18n?.language === "ar" ? "ar" : i18n?.language || "fr", {
+      weekday: "long",
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
-  const matchData =
-    allMatchData[matchId || "premier-league-1"] ||
-    allMatchData["premier-league-1"];
-  const ticketPrice = matchData.price;
+  useEffect(() => {
+    if (!keycloak?.authenticated) {
+      keycloak.login();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (matchId) {
+      dispatch(clearSelectedMatch());
+      dispatch(fetchMatchById(matchId));
+    }
+  }, [dispatch, matchId]);
+
+  useEffect(() => {
+    if (match?.homeTeam?.id) {
+      dispatch(fetchTeamById({ id: match?.homeTeam?.id, role: "home" }));
+    }
+    if (match?.awayTeam?.id) {
+      dispatch(fetchTeamById({ id: match?.awayTeam?.id, role: "away" }));
+    }
+    if (match?.stadium?.id) {
+      dispatch(fetchStadiumById(match?.stadium?.id));
+    }
+  }, [dispatch, match]);
+
+  const ticketPrice = Number(match?.zonePricings?.[0]?.price || 0);
   const serviceFee = 19.42;
   const subtotal = ticketPrice * quantity;
   const total = subtotal + serviceFee;
+  const stadiumText = useMemo(
+    () => `${stadium?.name || ""}, ${stadium?.cityName || ""}`,
+    [stadium],
+  );
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleContinue = () => {
-    if (currentStep === 1) {
-      if (!formData.email || !formData.confirmEmail || !formData.mobile) {
-        alert("Fill all required fields");
-        return;
-      }
-      if (formData.email !== formData.confirmEmail) {
-        alert("Emails do not match");
-        return;
-      }
-    }
-    if (currentStep < 3) setCurrentStep(currentStep + 1);
-    else alert("Payment would process here");
-  };
-
-  const handleBack = () => navigate(`/match/${matchId}`);
+  if (
+    (loading?.selected || loading?.homeTeam || loading?.awayTeam || loading?.stadium) &&
+    (!match || !homeTeam || !awayTeam || !stadium)
+  ) {
+    return <PageReload message="Reloading checkout data..." />;
+  }
 
   return (
     <div className="max-w-[1024px] mx-auto px-4 pt-6 pb-15">
@@ -109,251 +200,23 @@ const Show = () => {
         {/* Timer Bar */}
         <div className="bg-white border border-gray-300 rounded px-6 py-3 mb-8">
           <p className="text-sm text-gray-700">
-            The tickets are reserved for you.{" "}
+            {t("checkout.reserved")}{" "}
             <span className="font-bold text-black">
               {formatTime(timeRemaining)}
             </span>{" "}
-            remaining to finish your order.
+            {t("checkout.remaining")}
           </p>
         </div>
 
-        {/* Progress Steps */}
-        <div className="flex items-center justify-center gap-6 mb-10 max-w-xl mx-auto">
-          <div className="flex flex-col items-center">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center border-2 border-black bg-black text-white text-sm mb-1.5">
-              1
-            </div>
-            <span className="text-xs text-gray-700">Your Details</span>
-          </div>
-          <div className="w-20 h-[2px] bg-gray-300"></div>
-          <div className="flex flex-col items-center">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center border-2 border-gray-300 text-gray-400 text-sm mb-1.5">
-              2
-            </div>
-            <span className="text-xs text-gray-500">
-              Additional Information
-            </span>
-          </div>
-          <div className="w-20 h-[2px] bg-gray-300"></div>
-          <div className="flex flex-col items-center">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center border-2 border-gray-300 text-gray-400 text-sm mb-1.5">
-              3
-            </div>
-            <span className="text-xs text-gray-500">Payment</span>
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-8">
-          {/* LEFT FORM */}
-          <div className="rounded-lg ">
-            <h2 className="text-xl font-bold mb-5">Your Details</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-              <div>
-                <label className="block text-xs mb-1.5 text-black">
-                  Email Address<span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-400 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs mb-1.5 text-black">
-                  Confirm Email Address<span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  name="confirmEmail"
-                  value={formData.confirmEmail}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-400 text-sm"
-                />
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-xs mb-1.5 text-black">
-                Mobile Phone<span className="text-red-500">*</span>
-              </label>
-              <div className="flex gap-2">
-                <select className="px-3 py-2 border border-gray-300 rounded text-sm">
-                  <option>🇲🇦 +212</option>
-                </select>
-                <input
-                  type="tel"
-                  name="mobile"
-                  value={formData.mobile}
-                  onChange={handleInputChange}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-400 text-sm"
-                />
-              </div>
-            </div>
-
-            {/* Billing Address */}
-            <h3 className="text-lg font-bold mb-4">Billing Address</h3>
-
-            <div className="flex gap-6 mb-5">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="billingType"
-                  value="personal"
-                  checked={formData.billingType === "personal"}
-                  onChange={(e) =>
-                    setFormData({ ...formData, billingType: e.target.value })
-                  }
-                  className="w-4 h-4 accent-gray-700"
-                />
-                <span className="text-sm">Personal</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="billingType"
-                  value="business"
-                  checked={formData.billingType === "business"}
-                  onChange={(e) =>
-                    setFormData({ ...formData, billingType: e.target.value })
-                  }
-                  className="w-4 h-4 accent-gray-700"
-                />
-                <span className="text-sm">Business</span>
-              </label>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-xs mb-1.5 text-black">
-                  First Name<span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-400 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs mb-1.5 text-black">
-                  Last Name<span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-400 text-sm"
-                />
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-xs mb-1.5 text-black">
-                Address<span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-400 text-sm"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-xs mb-1.5 text-black">
-                  Postcode<span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="postcode"
-                  value={formData.postcode}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-400 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs mb-1.5 text-black">
-                  Town / City<span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-400 text-sm"
-                />
-              </div>
-            </div>
-
-            <div className="mb-5">
-              <label className="block text-xs mb-1.5 text-black">
-                Country<span className="text-red-500">*</span>
-              </label>
-              <select
-                name="country"
-                value={formData.country}
-                onChange={(e) =>
-                  setFormData({ ...formData, country: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-400 text-sm"
-              >
-                <option value="Morocco">Morocco</option>
-                <option value="United Kingdom">United Kingdom</option>
-                <option value="France">France</option>
-                <option value="Spain">Spain</option>
-              </select>
-            </div>
-
-            <div className="space-y-3 mb-5">
-              <label className="flex items-start gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="termsAccepted"
-                  checked={formData.termsAccepted}
-                  onChange={handleInputChange}
-                  className="mt-0.5 w-4 h-4 accent-gray-700"
-                />
-                <span className="text-xs leading-tight text-black">
-                  I have read and agree to the{" "}
-                  <a href="#" className="text-blue-600 underline">
-                    Terms and Conditions & Privacy Policy
-                  </a>
-                </span>
-              </label>
-
-              <label className="flex items-start gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="emailOptIn"
-                  checked={formData.emailOptIn}
-                  onChange={handleInputChange}
-                  className="mt-0.5 w-4 h-4 accent-gray-700"
-                />
-                <span className="text-xs leading-tight text-black">
-                  I agree to receive relevant emails with event updates and
-                  offers
-                </span>
-              </label>
-            </div>
-
-            <button
-              onClick={handleContinue}
-              className="w-full bg-[#4caf50] hover:bg-[#45a049] text-white font-medium py-3 rounded transition-colors mb-3"
-            >
-              Continue
-            </button>
-
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-              <span>100% Money Back Guarantee</span>
-            </div>
-          </div>
+          <Elements stripe={stripePromise}>
+            <CheckoutPaymentContent
+              firstName={userFirstName}
+              lastName={userLastName}
+              email={userEmail}
+              t={t}
+            />
+          </Elements>
 
           {/* RIGHT SUMMARY */}
           <div className="bg-white rounded-lg shadow-sm">
@@ -367,19 +230,19 @@ const Show = () => {
 
             <div className="px-5 pb-4">
               <p className="text-[10px] text-gray-500 uppercase tracking-wide mb-1.5">
-                {matchData.competition}
+                {match?.matchNumber}
               </p>
               <h3 className="text-lg font-bold mb-3">
-                {matchData.teamHome} vs {matchData.teamAway}
+                {homeTeam?.name} vs {awayTeam?.name}
               </h3>
               <div className="space-y-1.5 text-[11px] text-gray-600">
                 <div className="flex items-center gap-1.5">
                   <CalendarDaysIcon className="w-4 h-4 " />
-                  <span>{matchData.date}</span>
+                  <span>{formatMatchDate(match?.dateTime)}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <MapPinIcon className="w-4 h-4 " />
-                  <span>{matchData.venue}</span>
+                  <span>{stadiumText}</span>
                 </div>
               </div>
             </div>
@@ -390,11 +253,11 @@ const Show = () => {
               <div className="space-y-2.5 mb-4 px-5">
                 <div className="flex items-center gap-2 text-[11px]">
                   <CheckBadgeIcon className="w-4 h-4 text-green-600" />
-                  <span>150% Money Back Guarantee</span>
+                  <span>{t("checkout.guarantee")}</span>
                 </div>
                 <div className="flex items-center gap-2 text-[11px]">
                   <CheckBadgeIcon className="w-4 h-4 text-green-600" />
-                  <span>Easy and secure payments</span>
+                  <span>{t("checkout.easySecure")}</span>
                 </div>
               </div>
               {/* Payment Methods */}
@@ -457,7 +320,7 @@ const Show = () => {
                     </svg>
                     <div>
                       <p className="font-medium mb-0.5 text-gray-700">
-                        Mobile tickets
+                        {t("checkout.mobileTickets")}
                       </p>
                       <p className="text-gray-500 leading-tight">
                         Can be opened on a phone and will be sent digitally,
@@ -479,9 +342,9 @@ const Show = () => {
                     </svg>
                     <div>
                       <p className="font-medium mb-0.5 text-gray-700">
-                        {matchData.section}
+                        {stadium?.name}
                       </p>
-                      <p className="text-gray-500">{matchData.teamHome} fans</p>
+                      <p className="text-gray-500">{stadium?.cityName}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-2.5">
@@ -501,7 +364,7 @@ const Show = () => {
                     </svg>
                     <div>
                       <p className="font-medium mb-0.5 text-gray-700">
-                        Seats: Up To 2 Together
+                        Seats: {match?.zonePricings?.[0]?.availableSeats}
                       </p>
                       <p className="text-gray-500 leading-tight">
                         Max 2 seats will be next to each other. Buying an uneven
@@ -692,7 +555,9 @@ const Show = () => {
                     <div className="font-semibold text-sm ">
                       ${subtotal.toFixed(2)}
                     </div>
-                    <div className="text-[10px] text-gray-500">Per ticket</div>
+                    <div className="text-[10px] text-gray-500">
+                      ${ticketPrice.toFixed(2)} per ticket
+                    </div>
                   </div>
                 </div>
 

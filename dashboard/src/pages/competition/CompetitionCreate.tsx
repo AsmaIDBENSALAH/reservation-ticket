@@ -4,6 +4,7 @@ import ComponentCard from "../../components/common/ComponentCard";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import Label from "../../components/form/Label";
+import MultiSelect from "../../components/form/MultiSelect";
 import Select from "../../components/form/Select";
 import Input from "../../components/form/input/InputField";
 import TextArea from "../../components/form/input/TextArea";
@@ -19,6 +20,7 @@ import type { ContinentName } from "../../features/countries/countriesTypes";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 
 const COUNTRIES_PAGE_SIZE = 1000;
+type CompetitionScopeValue = CompetitionScope | "REGIONAL" | "INTERNATIONAL";
 
 const teamTypeOptions = [
   { value: "CLUB", label: "Club" },
@@ -28,7 +30,8 @@ const teamTypeOptions = [
 const scopeOptions = [
   { value: "NATIONAL", label: "National" },
   { value: "CONTINENTAL", label: "Continental" },
-  { value: "GLOBAL", label: "Global" },
+  { value: "REGIONAL", label: "Regional" },
+  { value: "INTERNATIONAL", label: "International" },
 ];
 
 const continentOptions = [
@@ -54,18 +57,20 @@ const CompetitionCreate = () => {
   const [logoUrl, setLogoUrl] = useState("");
   const [description, setDescription] = useState("");
   const [teamType, setTeamType] = useState<TeamType | "">("");
-  const [scope, setScope] = useState<CompetitionScope | "">("");
+  const [scope, setScope] = useState<CompetitionScopeValue | "">("");
   const [continent, setContinent] = useState<ContinentName | "">("");
   const [countryId, setCountryId] = useState("");
+  const [countryIds, setCountryIds] = useState<string[]>([]);
 
   const [initialName, setInitialName] = useState("");
   const [initialAbbreviation, setInitialAbbreviation] = useState("");
   const [initialLogoUrl, setInitialLogoUrl] = useState("");
   const [initialDescription, setInitialDescription] = useState("");
   const [initialTeamType, setInitialTeamType] = useState<TeamType | "">("");
-  const [initialScope, setInitialScope] = useState<CompetitionScope | "">("");
+  const [initialScope, setInitialScope] = useState<CompetitionScopeValue | "">("");
   const [initialContinent, setInitialContinent] = useState<ContinentName | "">("");
   const [initialCountryId, setInitialCountryId] = useState("");
+  const [initialCountryIds, setInitialCountryIds] = useState<string[]>([]);
 
   const [countrySelectKey, setCountrySelectKey] = useState(0);
   const [teamTypeSelectKey, setTeamTypeSelectKey] = useState(0);
@@ -101,9 +106,14 @@ const CompetitionCreate = () => {
       const loadedLogoUrl = payload.logoUrl ?? "";
       const loadedDescription = payload.description ?? "";
       const loadedTeamType = (payload.teamType ?? "") as TeamType | "";
-      const loadedScope = (payload.scope ?? "") as CompetitionScope | "";
-      const loadedContinent = (payload.continent ?? "") as ContinentName | "";
-      const loadedCountryId = payload.country?.id ?? "";
+      const loadedScope = ((payload.scope ?? "") === "GLOBAL"
+        ? "INTERNATIONAL"
+        : payload.scope) as CompetitionScopeValue | "";
+      const loadedContinent = loadedScope === "CONTINENTAL" ? (payload.continent ?? "") as ContinentName | "" : "";
+      const loadedCountryId = loadedScope === "NATIONAL" ? payload.country?.id ?? "" : "";
+      const loadedCountryIds = loadedScope === "REGIONAL"
+        ? payload.countries?.map((country) => country.id) ?? []
+        : [];
       setName(loadedName);
       setAbbreviation(loadedAbbreviation);
       setLogoUrl(loadedLogoUrl);
@@ -112,6 +122,7 @@ const CompetitionCreate = () => {
       setScope(loadedScope);
       setContinent(loadedContinent);
       setCountryId(loadedCountryId);
+      setCountryIds(loadedCountryIds);
 
       setInitialName(loadedName);
       setInitialAbbreviation(loadedAbbreviation);
@@ -121,6 +132,7 @@ const CompetitionCreate = () => {
       setInitialScope(loadedScope);
       setInitialContinent(loadedContinent);
       setInitialCountryId(loadedCountryId);
+      setInitialCountryIds(loadedCountryIds);
 
       setCountrySelectKey((previous) => previous + 1);
       setTeamTypeSelectKey((previous) => previous + 1);
@@ -135,6 +147,22 @@ const CompetitionCreate = () => {
     () => countries.map((country) => ({ value: country.id, label: country.name })),
     [countries],
   );
+  const countryMultiOptions = useMemo(
+    () => countries.map((country) => ({ value: country.id, text: country.name })),
+    [countries],
+  );
+
+  useEffect(() => {
+    if (scope !== "NATIONAL") {
+      setCountryId("");
+    }
+    if (scope !== "CONTINENTAL") {
+      setContinent("");
+    }
+    if (scope !== "REGIONAL") {
+      setCountryIds([]);
+    }
+  }, [scope]);
 
   const resetForm = () => {
     setName("");
@@ -145,6 +173,7 @@ const CompetitionCreate = () => {
     setScope("");
     setContinent("");
     setCountryId("");
+    setCountryIds([]);
     setCountrySelectKey((previous) => previous + 1);
     setTeamTypeSelectKey((previous) => previous + 1);
     setScopeSelectKey((previous) => previous + 1);
@@ -152,29 +181,58 @@ const CompetitionCreate = () => {
   };
 
   const handleSubmit = async () => {
-    if (!name.trim() || !abbreviation.trim() || !teamType || !scope || !continent || !countryId) {
+    if (!name.trim() || !abbreviation.trim() || !teamType || !scope) {
       return;
     }
 
-    const normalizedCountryId = countryId.trim();
-    if (!normalizedCountryId) {
-      return;
-    }
-
-    const payload = {
+    const basePayload = {
       name: name.trim(),
       abbreviation: abbreviation.trim(),
       logoUrl: logoUrl.trim(),
       description: description.trim(),
       teamType,
-      scope,
-      countryId: normalizedCountryId,
-      continent,
     };
+    let payload: Record<string, unknown>;
+
+    if (scope === "NATIONAL") {
+      const normalizedCountryId = countryId.trim();
+      if (!normalizedCountryId) {
+        return;
+      }
+      payload = {
+        ...basePayload,
+        scope: "NATIONAL",
+        countryId: normalizedCountryId,
+      };
+    } else if (scope === "CONTINENTAL") {
+      if (!continent) {
+        return;
+      }
+      payload = {
+        ...basePayload,
+        scope: "CONTINENTAL",
+        continent,
+      };
+    } else if (scope === "REGIONAL") {
+      const normalizedCountryIds = countryIds.map((value) => value.trim()).filter(Boolean);
+      if (normalizedCountryIds.length === 0) {
+        return;
+      }
+      payload = {
+        ...basePayload,
+        scope: "REGIONAL",
+        countryIds: normalizedCountryIds,
+      };
+    } else {
+      payload = {
+        ...basePayload,
+        scope: "INTERNATIONAL",
+      };
+    }
 
     const resultAction = isEditMode && id
-      ? await dispatch(updateCompetition({ id, payload }))
-      : await dispatch(createCompetition(payload));
+      ? await dispatch(updateCompetition({ id, payload: payload as never }))
+      : await dispatch(createCompetition(payload as never));
 
     const isSuccess = isEditMode
       ? updateCompetition.fulfilled.match(resultAction)
@@ -186,7 +244,15 @@ const CompetitionCreate = () => {
     }
   };
 
-  const isFormValid = Boolean(name.trim() && abbreviation.trim() && teamType && scope && continent && countryId);
+  const isScopeFieldValid = scope === "NATIONAL"
+    ? Boolean(countryId.trim())
+    : scope === "CONTINENTAL"
+      ? Boolean(continent)
+      : scope === "REGIONAL"
+        ? countryIds.length > 0
+        : scope === "INTERNATIONAL";
+  const isFormValid = Boolean(name.trim() && abbreviation.trim() && teamType && scope && isScopeFieldValid);
+  const hasCountryIdsChanged = [...countryIds].sort().join(",") !== [...initialCountryIds].sort().join(",");
   const hasChanges = isEditMode
     ? name.trim() !== initialName.trim() ||
       abbreviation.trim() !== initialAbbreviation.trim() ||
@@ -195,7 +261,8 @@ const CompetitionCreate = () => {
       teamType !== initialTeamType ||
       scope !== initialScope ||
       continent !== initialContinent ||
-      countryId !== initialCountryId
+      countryId !== initialCountryId ||
+      hasCountryIdsChanged
     : true;
   const isSubmitDisabled = loading || pageLoading || !isFormValid || !hasChanges;
 
@@ -270,27 +337,41 @@ const CompetitionCreate = () => {
                 />
               </div>
 
-              <div>
-                <Label>Continent</Label>
-                <Select
-                  key={continentSelectKey}
-                  options={continentOptions}
-                  placeholder="Select continent"
-                  defaultValue={continent}
-                  onChange={(value) => setContinent(value as ContinentName)}
-                />
-              </div>
+              {scope === "CONTINENTAL" && (
+                <div>
+                  <Label>Continent</Label>
+                  <Select
+                    key={continentSelectKey}
+                    options={continentOptions}
+                    placeholder="Select continent"
+                    defaultValue={continent}
+                    onChange={(value) => setContinent(value as ContinentName)}
+                  />
+                </div>
+              )}
 
-              <div>
-                <Label>Country</Label>
-                <Select
-                  key={countrySelectKey}
-                  options={countryOptions}
-                  placeholder="Select country"
-                  defaultValue={countryId}
-                  onChange={setCountryId}
+              {scope === "NATIONAL" && (
+                <div>
+                  <Label>Country</Label>
+                  <Select
+                    key={countrySelectKey}
+                    options={countryOptions}
+                    placeholder="Select country"
+                    defaultValue={countryId}
+                    onChange={setCountryId}
+                  />
+                </div>
+              )}
+
+              {scope === "REGIONAL" && (
+                <MultiSelect
+                  label="Countries"
+                  options={countryMultiOptions}
+                  value={countryIds}
+                  onChange={setCountryIds}
+                  placeholder="Select countries"
                 />
-              </div>
+              )}
 
               {(localError || error) && <p className="text-sm text-error-500">{localError ?? error}</p>}
 

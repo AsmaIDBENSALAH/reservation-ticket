@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Modal } from "../../components/ui/modal";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
+import NumberInput from "../../components/form/input/NumberInput";
 import Select from "../../components/form/Select";
 import Button from "../../components/ui/button/Button";
 
@@ -137,8 +138,7 @@ export default function Create({ isOpen, closeModal }: Props) {
 
             <div>
               <Label>Total Capacity</Label>
-              <Input
-                type="number"
+              <NumberInput
                 value={form.capacity}
                 onChange={(e) => handleChange("capacity", e.target.value)}
               />
@@ -146,8 +146,7 @@ export default function Create({ isOpen, closeModal }: Props) {
 
             <div>
               <Label>Construction Year</Label>
-              <Input
-                type="number"
+              <NumberInput
                 value={form.constructionYear}
                 onChange={(e) =>
                   handleChange("constructionYear", e.target.value)
@@ -197,8 +196,7 @@ export default function Create({ isOpen, closeModal }: Props) {
 
                   <div>
                     <Label>Zone Capacity</Label>
-                    <Input
-                      type="number"
+                    <NumberInput
                       value={zone.capacity}
                       onChange={(e) =>
                         handleZoneChange(index, "capacity", e.target.value)

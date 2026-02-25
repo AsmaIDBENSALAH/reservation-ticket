@@ -34,4 +34,6 @@ public interface MatchRepository extends JpaRepository<Match, UUID> {
             @Param("stadium") Stadium stadium,
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to);
+
+    Page<Match> findAllByOrderByAttendanceDesc(Pageable pageable);
 }

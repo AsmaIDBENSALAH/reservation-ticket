@@ -1,23 +1,25 @@
 import React from "react";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
+import { useTranslation } from "react-i18next";
 
 const HowItWorks = () => {
+  const { t } = useTranslation();
   const steps = [
     {
       number: "1.",
-      title: "Choose your match",
-      description: "Attend your favorite football match",
+      title: t("howItWorks.step1Title"),
+      description: t("howItWorks.step1Desc"),
     },
     {
       number: "2.",
-      title: "Choose your package",
-      description: "Enjoy an incomparable experience with our packages",
+      title: t("howItWorks.step2Title"),
+      description: t("howItWorks.step2Desc"),
     },
     {
       number: "3.",
-      title: "Choose your hotel",
-      description: "Choose your luxury hotel (optional)",
+      title: t("howItWorks.step3Title"),
+      description: t("howItWorks.step3Desc"),
     },
   ];
 
@@ -29,7 +31,7 @@ const HowItWorks = () => {
             {/* Title on the left */}
             <div className="lg:flex-shrink-0 lg:w-64">
               <h2 className="text-2xl font-bold text-gray-900">
-                How does it work?
+                {t("howItWorks.title")}
               </h2>
             </div>
 

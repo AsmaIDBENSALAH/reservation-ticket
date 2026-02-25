@@ -1,6 +1,28 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
+
+const ACCOUNT_CTA_DISMISSED_KEY = "account_cta_dismissed";
+
+const isAuthenticatedFromStorage = () => {
+  const token =
+    localStorage.getItem("token") ||
+    localStorage.getItem("authToken") ||
+    localStorage.getItem("access_token");
+  const user = localStorage.getItem("user");
+
+  if (token) return true;
+  if (!user) return false;
+
+  try {
+    const parsedUser = JSON.parse(user);
+    return Boolean(parsedUser);
+  } catch {
+    return Boolean(user);
+  }
+};
 
 const AccountCTASection = () => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -8,7 +30,31 @@ const AccountCTASection = () => {
     password: "",
     agreeToTerms: false,
   });
-  const [isDeleted, setIsDeleted] = useState(false);
+  const [isDeleted, setIsDeleted] = useState(() => {
+    const isDismissed =
+      localStorage.getItem(ACCOUNT_CTA_DISMISSED_KEY) === "true";
+    const isAuthenticated = isAuthenticatedFromStorage();
+    return isDismissed || isAuthenticated;
+  });
+
+  React.useEffect(() => {
+    const syncVisibility = () => {
+      const isDismissed =
+        localStorage.getItem(ACCOUNT_CTA_DISMISSED_KEY) === "true";
+      const isAuthenticated = isAuthenticatedFromStorage();
+      const nextIsDeleted = isDismissed || isAuthenticated;
+
+      setIsDeleted((prev) => (prev === nextIsDeleted ? prev : nextIsDeleted));
+    };
+
+    window.addEventListener("storage", syncVisibility);
+    window.addEventListener("focus", syncVisibility);
+
+    return () => {
+      window.removeEventListener("storage", syncVisibility);
+      window.removeEventListener("focus", syncVisibility);
+    };
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -16,6 +62,7 @@ const AccountCTASection = () => {
   };
 
   const handleDelete = () => {
+    localStorage.setItem(ACCOUNT_CTA_DISMISSED_KEY, "true");
     setIsDeleted(true);
   };
 
@@ -46,11 +93,10 @@ const AccountCTASection = () => {
       <div className="max-w-[1024px] mx-auto px-4 relative z-10">
         <div className="max-w-xl mx-auto text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-            CREATE YOUR ACCOUNT
+            {t("account.title")}
           </h2>
           <p className="text-gray-300 text-sm mb-6">
-            Track your football ticket purchases and manage your bookings all in
-            one place.
+            {t("account.subtitle")}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -58,7 +104,7 @@ const AccountCTASection = () => {
             <div className="space-y-2.5">
               <input
                 type="text"
-                placeholder="First Name"
+                placeholder={t("account.firstName")}
                 value={formData.firstName}
                 onChange={(e) =>
                   setFormData({ ...formData, firstName: e.target.value })
@@ -67,7 +113,7 @@ const AccountCTASection = () => {
               />
               <input
                 type="text"
-                placeholder="Last Name"
+                placeholder={t("account.lastName")}
                 value={formData.lastName}
                 onChange={(e) =>
                   setFormData({ ...formData, lastName: e.target.value })
@@ -76,7 +122,7 @@ const AccountCTASection = () => {
               />
               <input
                 type="email"
-                placeholder="Email Address"
+                placeholder={t("account.email")}
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
@@ -85,7 +131,7 @@ const AccountCTASection = () => {
               />
               <input
                 type="password"
-                placeholder="Password"
+                placeholder={t("account.password")}
                 value={formData.password}
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
@@ -105,19 +151,19 @@ const AccountCTASection = () => {
                 className="mt-0.5 w-4 h-4 rounded border-gray-400 text-emerald-600 focus:ring-emerald-500"
               />
               <label htmlFor="terms" className="text-xs text-gray-300">
-                Yes, I agree with the{" "}
+                {t("account.agreePrefix")}{" "}
                 <a
                   href="#"
                   className="text-white underline hover:text-emerald-400"
                 >
-                  privacy policy
+                  {t("account.privacy")}
                 </a>{" "}
-                and{" "}
+                {t("account.and")}{" "}
                 <a
                   href="#"
                   className="text-white underline hover:text-emerald-400"
                 >
-                  terms and conditions
+                  {t("account.terms")}
                 </a>
                 .
               </label>
@@ -127,7 +173,7 @@ const AccountCTASection = () => {
               type="submit"
               className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-8 rounded-lg transition-colors text-sm uppercase"
             >
-              Create Account
+              {t("account.create")}
             </button>
           </form>
         </div>
