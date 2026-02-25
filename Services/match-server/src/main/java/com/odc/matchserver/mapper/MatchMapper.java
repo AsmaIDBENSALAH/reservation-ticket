@@ -91,7 +91,6 @@ public class MatchMapper {
     public MatchDetailsDTO toMatchDetailsDTO(Match match) {
         if (match == null) return null;
 
-        // Convertir les zones
         List<MatchZoneDTO> zones = match.getZonePricings()
                 .stream()
                 .map(this::toMatchZoneDTO)
@@ -100,9 +99,12 @@ public class MatchMapper {
         return MatchDetailsDTO.builder()
                 .matchId(match.getId())
                 .date(match.getDateTime())
-                .address(match.getStadium().getAddress())
-                .competition(match.getCompetition().getName())
+                .address(match.getStadium() != null ? match.getStadium().getAddress() : null)
+                .stadeName(match.getStadium() != null ? match.getStadium().getName() : null)       // ✅
+                .competition(match.getCompetition() != null ? match.getCompetition().getName() : null)
                 .currency(match.getCurrency())
+                .homeTeam(match.getHomeTeam() != null ? match.getHomeTeam().getName() : null)      // ✅
+                .awayTeam(match.getAwayTeam() != null ? match.getAwayTeam().getName() : null)      // ✅
                 .zones(zones)
                 .build();
     }
@@ -113,6 +115,7 @@ public class MatchMapper {
                 .zoneName(zone.getZone().getName())
                 .availableSeats(zone.getAvailableSeats())
                 .price(zone.getPrice())
+                .porte(zone.getZone().getPorte())
                 .build();
     }
 }

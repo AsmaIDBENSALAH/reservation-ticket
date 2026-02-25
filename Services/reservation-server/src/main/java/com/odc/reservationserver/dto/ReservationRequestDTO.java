@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -12,17 +13,17 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class ReservationRequestDTO {
-
     private UUID matchId;
+    private String userId;
+    private String userName;
+    private String userEmail;
 
-    private UUID userId;
+    // Cet ID doit correspondre à l'ID du "MatchZonePricing"
+    // récupéré via MatchDetailsDTO.getZones()
+    private UUID matchZonePricingId;
 
-    private String porte;
+    private int quantity;
+    private String stripeToken;
 
-    private String stadiumZone; // VIP, NORMAL, VIRAGE
 
-    private UUID stadiumZoneId;
-    private int quantity; // nombre de sièges demandés
-
-    private String stripeToken; // 👈 AJOUTE CECI
 }

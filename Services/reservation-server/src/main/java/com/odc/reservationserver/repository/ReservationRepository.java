@@ -17,4 +17,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
     Page<Reservation> findByUserId(UUID userId, Pageable pageable);
     // Ajoute ceci pour que le Scheduler puisse fonctionner
     List<Reservation> findAllByStatusAndReservationDateBefore(ReservationStatus status, LocalDateTime dateTime);
+
+    Page<Reservation> findByUserIdAndStatusIn(String userId, List<ReservationStatus> statuses, Pageable pageable);
+    List<Reservation> findAllByStatusAndMatchDateBefore(ReservationStatus status, LocalDateTime date);
+
+
 }

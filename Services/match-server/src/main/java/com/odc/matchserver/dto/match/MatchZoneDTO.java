@@ -14,4 +14,6 @@ public class MatchZoneDTO {
     private int availableSeats;
     private BigDecimal price;
 
+    private String porte;
+
 }

@@ -12,9 +12,17 @@ import java.util.UUID;
 public class MatchDetailsDTO {
     private UUID matchId;
 
+
     private LocalDateTime date;
     private String address;
     private String competition;
+    private String homeTeam;
+    private String awayTeam;
     private List<MatchZoneDTO> zones;
+    private String currency;
+
+    private String stadeName;
+
+    private LocalDateTime matchDate;
 }
 

@@ -22,10 +22,10 @@ public class ReservationMapper {
         return Reservation.builder()
                 .matchId(dto.getMatchId())
                 .userId(dto.getUserId())
-                .stadiumZone(dto.getStadiumZone())
-                .stadiumZoneId(dto.getStadiumZoneId())
+                .userEmail(dto.getUserEmail())
+                .userName(dto.getUserName())
+                .matchZonePricingId(dto.getMatchZonePricingId())
                 .quantity(dto.getQuantity())
-                .porte(dto.getPorte())
                 .reservationDate(LocalDateTime.now())
                 .build();
     }
@@ -33,18 +33,26 @@ public class ReservationMapper {
        Reservation -> ReservationResponseDTO
        ========================= */
     public ReservationResponseDTO toReservationResponseDTO(Reservation reservation) {
-        if (reservation == null) return null;
-
         return ReservationResponseDTO.builder()
                 .reservationId(reservation.getId())
                 .userId(reservation.getUserId())
+                .userName(reservation.getUserName())
+                .userEmail(reservation.getUserEmail())
                 .matchId(reservation.getMatchId())
-                .stadiumZone(reservation.getStadiumZone())
+                .stadiumZone(reservation.getStadiumZoneName())
+                .stadiumZoneId(reservation.getMatchZonePricingId())
+                .porte(reservation.getPorte())
                 .quantity(reservation.getQuantity())
                 .totalPrice(reservation.getTotalPrice())
                 .status(reservation.getStatus())
                 .reservationDate(reservation.getReservationDate())
-                .stadiumZoneId(reservation.getStadiumZoneId())
+                // ✅ Nouvelles infos miroir
+                .currency(reservation.getCurrency())
+                .homeTeam(reservation.getHomeTeam())
+                .awayTeam(reservation.getAwayTeam())
+                .competition(reservation.getCompetition())
+                .stadeName(reservation.getStadeName())
+                .reservationDate(reservation.getReservationDate())
                 .build();
     }
 
@@ -81,13 +89,13 @@ public class ReservationMapper {
         return ReservationWithTicketsDTO.builder()
                 .reservationId(reservation.getId())
                 .matchId(reservation.getMatchId())
-                .stadiumZone(reservation.getStadiumZone())
+                .stadiumZone(reservation.getStadiumZoneName())
                 .quantity(reservation.getQuantity())
                 .totalPrice(reservation.getTotalPrice())
                 .status(reservation.getStatus())
                 .tickets(ticketDTOs)
                 .porte(reservation.getPorte())
-                .stadiumZoneId(reservation.getStadiumZoneId())
+                .stadiumZoneId(reservation.getMatchZonePricingId())
                 .build();
     }
 }
