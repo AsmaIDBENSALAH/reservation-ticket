@@ -1,13 +1,14 @@
 import type React from "react";
 import type { FC } from "react";
 
-interface InputProps {
+export interface InputProps {
   type?: "text" | "number" | "email" | "password" | "date" | "time" | string;
   id?: string;
   name?: string;
   placeholder?: string;
   value?: string | number;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   className?: string;
   min?: string;
   max?: string;
@@ -25,6 +26,7 @@ const Input: FC<InputProps> = ({
   placeholder,
   value,
   onChange,
+  onKeyDown,
   className = "",
   min,
   max,
@@ -46,6 +48,40 @@ const Input: FC<InputProps> = ({
     inputClasses += ` bg-transparent text-gray-800 border-gray-300 focus:border-brand-300 focus:ring-brand-500/20 dark:border-gray-700 dark:text-white/90  dark:focus:border-brand-800`;
   }
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (type !== "number") {
+      onChange?.(e);
+      return;
+    }
+
+    const nextValue = e.target.value;
+    if (nextValue === "") {
+      onChange?.(e);
+      return;
+    }
+
+    const numericValue = Number(nextValue);
+    if (!Number.isFinite(numericValue)) {
+      return;
+    }
+
+    if (numericValue < 0) {
+      const target = e.target as HTMLInputElement;
+      target.value = "0";
+    }
+
+    onChange?.(e);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (type === "number" && ["-", "+", "e", "E"].includes(e.key)) {
+      e.preventDefault();
+    }
+    onKeyDown?.(e);
+  };
+
+  const resolvedMin = type === "number" ? "0" : min;
+
   return (
     <div className="relative">
       <input
@@ -54,8 +90,9 @@ const Input: FC<InputProps> = ({
         name={name}
         placeholder={placeholder}
         value={value}
-        onChange={onChange}
-        min={min}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        min={resolvedMin}
         max={max}
         step={step}
         disabled={disabled}

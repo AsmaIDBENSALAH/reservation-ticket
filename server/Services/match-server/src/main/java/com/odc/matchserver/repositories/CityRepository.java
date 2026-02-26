@@ -19,4 +19,8 @@ public interface CityRepository extends JpaRepository<City, UUID> {
     Optional<City> findById(UUID idCity);
 
     List<City> findByCountryId(UUID countryId);
+
+    Page<City> findByActiveTrue(Pageable pageable);
+
+    Page<City> findByActiveTrueAndNameContainingIgnoreCase(String keyword, Pageable pageable);
 }

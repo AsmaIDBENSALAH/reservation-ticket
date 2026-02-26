@@ -117,4 +117,12 @@ public class MatchController {
                 to,
                 PageRequest.of(page, size, Sort.by(sortBy)));
     }
+
+    @GetMapping("/most-popular")
+    public Page<MatchResponseDTO> getMostPopularMatches(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return matchService.getMostPopularMatches(
+                PageRequest.of(page, size));
+    }
 }

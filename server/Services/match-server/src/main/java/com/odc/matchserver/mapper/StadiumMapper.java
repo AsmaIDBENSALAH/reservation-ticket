@@ -32,14 +32,6 @@ public class StadiumMapper {
                 .active(true) // actif par défaut
                 .build();
 
-        // zones
-        if (dto.getZones() != null) {
-            List<StadiumZone> zones = dto.getZones().stream()
-                    .map(z -> StadiumZoneMapper.toEntity(z, stadium))
-                    .collect(Collectors.toList());
-            stadium.setZones(zones);
-        }
-
         return stadium;
     }
 

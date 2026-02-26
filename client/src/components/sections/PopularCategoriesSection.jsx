@@ -1,22 +1,34 @@
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import CategoryCard from "../CategoryCard";
+import {
+  fetchCompetitions,
+  selectCompetitionsList,
+  selectCompetitionsLoading,
+} from "@/store/slices/competitionsSlice";
+import { useTranslation } from "react-i18next";
 
 const PopularCategoriesSection = () => {
-  const categoriesCards = [
-    {
-      title: "Champions League 2025-2026",
-      image:
-        "https://images.unsplash.com/photo-1651043421470-88b023bb9636?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmb290YmFsbCUyMHN0YWRpdW0lMjBncmVlbiUyMHBpdGNofGVufDF8fHx8MTc2ODY5MDUwMHww&ixlib=rb-4.1.0&q=80&w=1080",
-      buttonText: "Tout voir",
-      to: "/championship/premier-league-2",
-    },
-    {
-      title: "Europa League 2025-2026",
-      image:
-        "https://images.unsplash.com/photo-1764438300230-f1eb26b918cf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmb290YmFsbCUyMG1hdGNoJTIwYWN0aW9ufGVufDF8fHx8MTc2ODY5MDE5OHww&ixlib=rb-4.1.0&q=80&w=1080",
-      buttonText: "Tout voir",
-      to: "/championship/premier-league-2",
-    },
-  ];
+  const dispatch = useDispatch();
+  const { t } = useTranslation();
+  const competitionsList = useSelector(selectCompetitionsList);
+  const competitionsLoading = useSelector(selectCompetitionsLoading);
+
+  useEffect(() => {
+    dispatch(fetchCompetitions({ page: 0, size: 10 }));
+  }, [dispatch]);
+
+  const categoriesCards = (competitionsLoading?.list
+    ? []
+    : competitionsList?.content || []
+  )
+    .slice(0, 2)
+    .map((competition) => ({
+    title: competition.name || "",
+    image: competition.logoUrl || "",
+    buttonText: t("categories.seeAll"),
+    to: `/championship/${competition.id}`,
+    }));
 
   return (
     <section className="bg-gray-50 py-5">

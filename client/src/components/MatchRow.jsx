@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const MatchRow = ({
   id,
@@ -14,6 +15,7 @@ const MatchRow = ({
   price,
   isLast,
 }) => {
+  const { t } = useTranslation();
   return (
     <div
       className={[
@@ -50,7 +52,7 @@ const MatchRow = ({
       <div className="flex items-center gap-3">
         {price && (
           <div className="text-right">
-            <div className="text-xs text-gray-500 mb-1">From</div>
+            <div className="text-xs text-gray-500 mb-1">{t("matchRow.from")}</div>
             <div className="text-xl font-bold text-emerald-600">{price}</div>
           </div>
         )}
@@ -59,7 +61,7 @@ const MatchRow = ({
           to={`/match/${id}`}
           className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-sm font-bold flex-shrink-0 transition-all hover:shadow-lg text-center"
         >
-          View Details
+          {t("matchRow.viewDetails")}
         </Link>
       </div>
     </div>

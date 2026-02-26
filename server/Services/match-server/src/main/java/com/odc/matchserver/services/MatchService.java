@@ -1,6 +1,5 @@
 package com.odc.matchserver.services;
 
-
 import com.odc.matchserver.dto.match.MatchDetailsDTO;
 import com.odc.matchserver.dto.match.MatchRequestDTO;
 import com.odc.matchserver.dto.match.MatchResponseDTO;
@@ -34,4 +33,7 @@ public interface MatchService {
     Page<MatchResponseDTO> getMatchesByStadium(UUID stadiumId, Pageable pageable);
 
     Page<MatchResponseDTO> getMatchesByDateRange(LocalDateTime from, LocalDateTime to, Pageable pageable);
+
+    Page<MatchResponseDTO> getMostPopularMatches(Pageable pageable);
+
 }

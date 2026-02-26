@@ -7,6 +7,7 @@ import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
+import NumberInput from "../../components/form/input/NumberInput";
 import Select from "../../components/form/Select";
 import Button from "../../components/ui/button/Button";
 import TextArea from "../../components/form/input/TextArea";
@@ -566,8 +567,7 @@ const Create = () => {
 
                 <div>
                   <Label>Attendance</Label>
-                  <Input
-                    type="number"
+                  <NumberInput
                     value={attendance}
                     onChange={(e) => setAttendance(e.target.value)}
                     placeholder="0"
@@ -675,8 +675,7 @@ const Create = () => {
 
                         <div>
                           <Label>Price</Label>
-                          <Input
-                            type="number"
+                          <NumberInput
                             value={zonePricing.price}
                             onChange={(e) => handleZonePricingChange(zonePricing.key, "price", e.target.value)}
                             placeholder="15000"
@@ -685,8 +684,7 @@ const Create = () => {
 
                         <div>
                           <Label>Available Seats</Label>
-                          <Input
-                            type="number"
+                          <NumberInput
                             value={zonePricing.availableSeats}
                             max={Number.isFinite(currentMaxSeats) ? String(currentMaxSeats) : undefined}
                             onChange={(e) => handleZonePricingChange(zonePricing.key, "availableSeats", e.target.value)}

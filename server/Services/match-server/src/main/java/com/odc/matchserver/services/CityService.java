@@ -20,4 +20,6 @@ public interface CityService {
     CityResponseDTO updateCity(UUID id, CityRequestDTO dto);
 
     void deleteCity(UUID id);
+
+    
 }

@@ -1,8 +1,11 @@
 import React from "react";
 
-const MatchCard = ({ teams, league, date, image, price }) => {
+const MatchCard = ({ teams, league, date, image, price, onClick }) => {
   return (
-    <div className="group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all cursor-pointer">
+    <div
+      onClick={onClick}
+      className="group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all cursor-pointer"
+    >
       <div className="relative h-48">
         <img
           src={image}

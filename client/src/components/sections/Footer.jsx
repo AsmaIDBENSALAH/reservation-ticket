@@ -1,70 +1,109 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const Footer = () => {
+  const { t, i18n } = useTranslation();
+
+  const columns = [
+    {
+      title: t("footer.company"),
+      links: [
+        { label: "About us", to: "/" },
+        { label: "Contact Us", to: "/" },
+        { label: "Privacy policy", to: "/" },
+        { label: "Information", to: "/" },
+        { label: "FAQ", to: "/" },
+        { label: "Disclaimer", to: "/" },
+        { label: "Returning", to: "/" },
+        { label: "News", to: "/" },
+        { label: "Cookie Policy", to: "/" },
+      ],
+    },
+    {
+      title: t("footer.topCategories"),
+      links: [
+        { label: "Premier League tickets", to: "/matches" },
+        { label: "FA Cup tickets", to: "/matches" },
+        { label: "EFL Cup tickets", to: "/matches" },
+        { label: "Champions League tickets", to: "/matches" },
+        { label: "Europa League tickets", to: "/matches" },
+        { label: "Euro Cup tickets", to: "/matches" },
+        { label: "Europa League tickets", to: "/matches" },
+        { label: "FA Cup Final tickets", to: "/matches" },
+        { label: "Community Shield tickets", to: "/matches" },
+      ],
+    },
+    {
+      title: t("footer.bestSellers"),
+      links: [
+        { label: "Arsenal tickets", to: "/matches" },
+        { label: "Manchester United tickets", to: "/matches" },
+        { label: "Liverpool tickets", to: "/matches" },
+        { label: "Chelsea tickets", to: "/matches" },
+        { label: "Tottenham tickets", to: "/matches" },
+        { label: "Barcelona tickets", to: "/matches" },
+        { label: "Champions League final tickets", to: "/matches" },
+        { label: "England Football tickets", to: "/matches" },
+        { label: "Europa League final tickets", to: "/matches" },
+        { label: "World Cup 2026 final tickets", to: "/matches" },
+      ],
+    },
+    {
+      title: t("footer.homepages"),
+      links: [
+        { label: "GB English", lang: "en" },
+        { label: "FR Francais", lang: "fr" },
+        { label: "AR العربية", lang: "ar" },
+      ],
+    },
+  ];
+
   return (
-    <footer className="text-gray-700 bg-footerbackground">
-     {/* Main Footer Content */}
-      <div className="max-w-[1024px] mx-auto px-4 py-12">
-        <div className="grid md:grid-cols-4 gap-8 mb-8">
-          {/* Company info */}
-          <div>
-            <h4 className="font-bold text-white mb-4">Chritickets</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-white hover:underline transition-colors">About us</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">Contact Us</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">Privacy policy</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">Information</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">FAQ</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">Disclaimer</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">Returning</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">News</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">Cookie Policy</a></li>
-            </ul>
-          </div>
+    <footer className="bg-footerbackground text-white">
+      <div className="max-w-[1024px] mx-auto px-4 py-10 sm:py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+          {columns.map((column) => (
+            <div key={column.title} className="min-w-0">
+              <h4 className="font-bold mb-3 sm:mb-4">{column.title}</h4>
+              <ul className="space-y-2 text-sm">
+                {column.links.map((link) => (
+                  <li key={`${column.title}-${link.label}`}>
+                    {link.to ? (
+                      <Link
+                        to={link.to}
+                        className="text-white/90 hover:text-white hover:underline break-words transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => i18n.changeLanguage(link.lang)}
+                        className="text-white/90 hover:text-white hover:underline break-words transition-colors text-left"
+                      >
+                        {link.label}
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
 
-          {/* Top Categories */}
-          <div>
-            <h4 className="font-bold text-white mb-4">Top Categories</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-white hover:underline transition-colors">Premier League tickets</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">FA Cup tickets</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">EFL Cup tickets</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">Champions League tickets</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">Europa League tickets</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">Euro Cup tickets</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">Europa League tickets</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">FA Cup Final tickets</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">Community Shield tickets</a></li>
-            </ul>
-          </div>
-
-          {/* Best Sellers */}
-          <div>
-            <h4 className="font-bold text-white mb-4">Best Sellers</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-white hover:underline transition-colors">Arsenal tickets</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">Manchester United tickets</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">Liverpool tickets</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">Chelsea tickets</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">Tottenham tickets</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">Barcelona tickets</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">Champions League final tickets</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">England Football tickets</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">Europa League final tickets</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">World Cup 2026 final tickets</a></li>
-            </ul>
-          </div>
-
-          {/* Homepages */}
-          <div>
-            <h4 className="font-bold text-white mb-4">Homepages</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-white hover:underline transition-colors">GB English</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">FR Français</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">DE Deutsch</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">NL Nederlands</a></li>
-              <li><a href="#" className="text-white hover:underline transition-colors">ES Español</a></li>
-            </ul>
+        <div className="mt-8 pt-5 border-t border-white/20 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-xs text-white/80">
+          <p className="text-center sm:text-left">Copyright 2026 Chritickets. All rights reserved.</p>
+          <div className="flex items-center justify-center sm:justify-end gap-4">
+            <Link to="/" className="hover:text-white transition-colors">
+              Terms
+            </Link>
+            <Link to="/" className="hover:text-white transition-colors">
+              Privacy
+            </Link>
+            <Link to="/" className="hover:text-white transition-colors">
+              Cookies
+            </Link>
           </div>
         </div>
       </div>

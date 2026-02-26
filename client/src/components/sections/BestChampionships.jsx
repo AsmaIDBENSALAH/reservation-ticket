@@ -1,44 +1,39 @@
 import { useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { useTranslation } from "react-i18next";
+import {
+  fetchCompetitions,
+  selectCompetitionsList,
+  selectCompetitionsLoading,
+} from "@/store/slices/competitionsSlice";
 
 import "swiper/css";
 import "swiper/css/navigation";
 
 export function BestChampionships() {
-  const championships = [
-    {
-      name: "La Liga",
-      logo: "https://images.unsplash.com/photo-1766756467595-fd3f1f62d562?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080",
-      country: "Spain",
-    },
-    {
-      name: "Serie A",
-      logo: "https://images.unsplash.com/photo-1585582439639-da24975664a3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080",
-      country: "Italy",
-    },
-    {
-      name: "Ligue 1",
-      logo: "https://images.unsplash.com/photo-1715591263944-e35bf44e7f0f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080",
-      country: "France",
-    },
-    {
-      name: "Premier League",
-      logo: "https://images.unsplash.com/photo-1695713503375-e8458c3e1d5a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080",
-      country: "England",
-    },
-    {
-      name: "Bundesliga",
-      logo: "https://images.unsplash.com/photo-1474899452492-5eea44100ec4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080",
-      country: "Germany",
-    },
-    {
-      name: "Champions League",
-      logo: "https://images.unsplash.com/photo-1643796903573-68834ffadcb6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080",
-      country: "Europe",
-    },
-  ];
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const competitionsList = useSelector(selectCompetitionsList);
+  const competitionsLoading = useSelector(selectCompetitionsLoading);
+  const championships = (competitionsLoading?.list
+    ? []
+    : competitionsList?.content || []
+  ).map((competition) => ({
+    id: competition.id,
+    name: competition.name || "",
+    logo: competition.logoUrl || "",
+    country: competition.continent || "",
+  }));
+
+  useEffect(() => {
+    dispatch(fetchCompetitions({ page: 0, size: 10 }));
+  }, [dispatch]);
 
   const prevRef = useRef(null);
   const nextRef = useRef(null);
@@ -49,11 +44,10 @@ export function BestChampionships() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Les meilleurs championnats de football
+              {t("bestChampionships.title")}
             </h2>
             <p className="text-gray-600 text-sm">
-              Vous cherchez un match de football ? Alors vous êtes au bon
-              endroit !
+              {t("bestChampionships.subtitle")}
             </p>
           </div>
 
@@ -97,7 +91,10 @@ export function BestChampionships() {
             >
               {championships.map((championship, index) => (
                 <SwiperSlide key={index}>
-                  <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer">
+                  <div
+                    onClick={() => navigate(`/championship/${championship.id}`)}
+                    className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer"
+                  >
                     <div className="aspect-[4/3] overflow-hidden bg-gray-100">
                       <img
                         src={championship.logo}

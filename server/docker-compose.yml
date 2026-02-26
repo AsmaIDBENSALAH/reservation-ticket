@@ -1,41 +1,36 @@
-version: "3.8"
-
 services:
-  # PostgreSQL database for Match Service
   postgresql-match:
     container_name: ms_pg_sql_match
-    image: postgres:16
+    image: postgres
     environment:
       POSTGRES_DB: matchdb
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
-      PGDATA: /var/lib/postgresql/data
+      PGDATA: /data/postgres
     volumes:
-      - postgres-match:/var/lib/postgresql/data
+      - postgres-match:/data/postgres
     ports:
       - "5432:5432"
     networks:
       - microservices-net
     restart: unless-stopped
 
-  # PostgreSQL database for Reservation Service
   postgresql-reservation:
     container_name: ms_pg_sql_reservation
-    image: postgres:16
+    image: postgres
     environment:
       POSTGRES_DB: reservationdb
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
-      PGDATA: /var/lib/postgresql/data
+      PGDATA: /data/postgres
     volumes:
-      - postgres-reservation:/var/lib/postgresql/data
+      - postgres-reservation:/data/postgres
     ports:
-      - "5435:5432"
+      - "5440:5432"
     networks:
       - microservices-net
     restart: unless-stopped
 
-  # Web UI for managing PostgreSQL databases
   pgadmin:
     container_name: ms_pgadmin
     image: dpage/pgadmin4
@@ -50,67 +45,36 @@ services:
     networks:
       - microservices-net
     restart: unless-stopped
-    depends_on:
-      - postgresql-match
-      - postgresql-reservation
 
-  # MongoDB database
-  mongodb:
-    image: mongo:7
-    container_name: mongo_db
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo:/data/db
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin
-    networks:
-      - microservices-net
-    restart: unless-stopped
 
-  # Web UI for MongoDB
-  mongo-express:
-    image: mongo-express:1.0.2
-    container_name: mongo_express
-    restart: always
-    ports:
-      - "8081:8081"
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
-      ME_CONFIG_MONGODB_ADMINPASSWORD: admin
-      ME_CONFIG_MONGODB_SERVER: mongodb
-    depends_on:
-      - mongodb
-    networks:
-      - microservices-net
-
-  # Local SMTP server for email testing
   mail-dev:
     container_name: ms-mail-dev
     image: maildev/maildev
     ports:
-      - "1080:1080"   # Web interface
-      - "1025:1025"   # SMTP port
-    networks:
-      - microservices-net
-    restart: unless-stopped
+      - 1080:1080
+      - 1025:1025
 
-  # Keycloak authentication server
-  keycloak:
-    image: quay.io/keycloak/keycloak:26.5.3
-    container_name: keycloak
-    command: start-dev
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: kafka
     ports:
-      - "8085:8080"
+      - "9092:9092"
     environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      - KAFKA_NODE_ID=1
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@localhost:9093
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
+      - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
+      - KAFKA_NUM_PARTITIONS=1
     networks:
       - microservices-net
-    restart: unless-stopped
 
-  # Match microservice
   match-service:
     container_name: match-server
     build: ./Services/match-server
@@ -118,7 +82,6 @@ services:
       - "8082:8080"
     depends_on:
       - postgresql-match
-      - keycloak
     networks:
       - microservices-net
     environment:
@@ -126,7 +89,6 @@ services:
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: admin
 
-  # Reservation microservice
   reservation-service:
     container_name: reservation-server
     build: ./Services/reservation-server
@@ -134,8 +96,6 @@ services:
       - "8083:8080"
     depends_on:
       - postgresql-reservation
-      - keycloak
-      - match-service
     networks:
       - microservices-net
     environment:
@@ -143,12 +103,23 @@ services:
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: admin
 
-  # API Gateway
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    command: start-dev
+    ports:
+      - "8085:8080"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    networks:
+      - microservices-net
+
   gateway-service:
     container_name: api_gateway
     build: ./Services/gateway-server
     ports:
-      - "8084:8084"  # Change to 8084:8080 if gateway runs internally on 8080
+      - "8084:8084"
     depends_on:
       - match-service
       - reservation-service
@@ -161,6 +132,7 @@ networks:
     driver: bridge
 
 volumes:
+  postgres:
   postgres-match:
   postgres-reservation:
   pgadmin:

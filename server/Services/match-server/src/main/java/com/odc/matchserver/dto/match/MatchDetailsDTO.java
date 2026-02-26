@@ -1,4 +1,5 @@
 package com.odc.matchserver.dto.match;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -15,4 +16,10 @@ public class MatchDetailsDTO {
     private String address;
     private String competition;
     private List<MatchZoneDTO> zones;
+    private String currency;
+    private String homeTeam;
+    private String awayTeam;
+
+    private String stadeName;
+
 }

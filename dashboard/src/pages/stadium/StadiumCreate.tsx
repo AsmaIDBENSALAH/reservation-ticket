@@ -6,6 +6,7 @@ import PageMeta from "../../components/common/PageMeta";
 import Label from "../../components/form/Label";
 import Select from "../../components/form/Select";
 import Input from "../../components/form/input/InputField";
+import NumberInput from "../../components/form/input/NumberInput";
 import TextArea from "../../components/form/input/TextArea";
 import Button from "../../components/ui/button/Button";
 import { fetchCities } from "../../features/cities";
@@ -146,6 +147,24 @@ const StadiumCreate = () => {
     [countries],
   );
 
+  const parsedCapacity = useMemo(() => toPositiveInteger(capacity), [capacity]);
+  const usedSeats = useMemo(
+    () =>
+      zones.reduce((total, zone) => {
+        const parsedZoneSeats = toPositiveInteger(zone.capacity);
+        return total + (parsedZoneSeats ?? 0);
+      }, 0),
+    [zones],
+  );
+  const remainingSeats = useMemo(
+    () => (parsedCapacity ?? 0) - usedSeats,
+    [parsedCapacity, usedSeats],
+  );
+  const hasSeatsOverflow = !isEditMode && parsedCapacity !== null && remainingSeats < 0;
+  const seatsOverflowError = hasSeatsOverflow
+    ? "Number of seats exceeds stadium capacity."
+    : null;
+
   const handleZoneChange = (index: number, field: keyof ZoneForm, value: string) => {
     setZones((previousZones) => {
       const nextZones = [...previousZones];
@@ -184,12 +203,20 @@ const StadiumCreate = () => {
   };
 
   const handleSubmit = async () => {
+    setLocalError(null);
+
     if (!name.trim() || !address.trim() || !cityId || !countryId) {
+      setLocalError("Please fill in all required fields.");
       return;
     }
 
-    const parsedCapacity = toPositiveInteger(capacity);
     if (!parsedCapacity) {
+      setLocalError("Please enter a valid stadium capacity.");
+      return;
+    }
+
+    if (hasSeatsOverflow) {
+      setLocalError("Number of seats exceeds stadium capacity.");
       return;
     }
 
@@ -245,7 +272,7 @@ const StadiumCreate = () => {
     }
   };
 
-  const isFormValid = Boolean(name.trim() && address.trim() && cityId && countryId && toPositiveInteger(capacity));
+  const isFormValid = Boolean(name.trim() && address.trim() && cityId && countryId && parsedCapacity);
   const hasChanges = isEditMode
     ? name.trim() !== initialName.trim() ||
       address.trim() !== initialAddress.trim() ||
@@ -255,7 +282,7 @@ const StadiumCreate = () => {
       constructionYear !== initialConstructionYear ||
       description.trim() !== initialDescription.trim()
     : true;
-  const isSubmitDisabled = loading || pageLoading || !isFormValid || !hasChanges;
+  const isSubmitDisabled = loading || pageLoading || !isFormValid || !hasChanges || hasSeatsOverflow;
 
   return (
     <>
@@ -310,18 +337,19 @@ const StadiumCreate = () => {
 
               <div>
                 <Label>Capacity</Label>
-                <Input
-                  type="number"
+                <NumberInput
                   value={capacity}
-                  onChange={(e) => setCapacity(e.target.value)}
+                  onChange={(e) => {
+                    setCapacity(e.target.value);
+                    setLocalError(null);
+                  }}
                   placeholder="Total capacity"
                 />
               </div>
 
               <div>
                 <Label>Construction Year</Label>
-                <Input
-                  type="number"
+                <NumberInput
                   value={constructionYear}
                   onChange={(e) => setConstructionYear(e.target.value)}
                   placeholder="Construction year"
@@ -340,10 +368,27 @@ const StadiumCreate = () => {
 
               {!isEditMode && (
                 <div className="space-y-4">
+                  <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+                    <p className="text-sm text-gray-700 dark:text-gray-300">
+                      Total capacity: {parsedCapacity ?? 0}
+                    </p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">
+                      Used seats: {usedSeats} / {parsedCapacity ?? 0}
+                    </p>
+                    <p className={`text-sm ${remainingSeats < 0 ? "text-error-500" : "text-gray-700 dark:text-gray-300"}`}>
+                      Remaining seats: {remainingSeats}
+                    </p>
+                  </div>
+
                   <div className="flex items-center justify-between">
                     <Label>Zones</Label>
-                    <Button size="sm" variant="outline" onClick={handleAddZone}>
-                      Add Zone
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleAddZone}
+                      disabled={!parsedCapacity || hasSeatsOverflow || remainingSeats <= 0}
+                    >
+                      Create Zone
                     </Button>
                   </div>
 
@@ -360,12 +405,15 @@ const StadiumCreate = () => {
                       </div>
 
                       <div>
-                        <Label>Zone Capacity</Label>
-                        <Input
-                          type="number"
+                        <Label>Number Of Seats</Label>
+                        <NumberInput
                           value={zone.capacity}
-                          onChange={(e) => handleZoneChange(index, "capacity", e.target.value)}
-                          placeholder="Zone capacity"
+                          onChange={(e) => {
+                            handleZoneChange(index, "capacity", e.target.value);
+                            setLocalError(null);
+                          }}
+                          placeholder="Zone seats"
+                          error={Boolean(seatsOverflowError)}
                         />
                       </div>
 
@@ -404,6 +452,7 @@ const StadiumCreate = () => {
                 </div>
               )}
 
+              {seatsOverflowError && <p className="text-sm text-error-500">{seatsOverflowError}</p>}
               {(localError || error) && <p className="text-sm text-error-500">{localError ?? error}</p>}
 
               <div className="flex items-center gap-3">

@@ -18,6 +18,7 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "matches")
 @Getter
@@ -42,7 +43,6 @@ public class Match {
     @Column(name = "match_number")
     private String matchNumber;
 
-
     @Column(name = "attendance")
     private Integer attendance;
 
@@ -50,7 +50,7 @@ public class Match {
     private String referee;
 
     @Column(name = "match_image_url")
-    private String matchImageUrl;  // Image du trophée
+    private String matchImageUrl; // Image du trophée
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stadium_id", nullable = false)
@@ -72,9 +72,7 @@ public class Match {
     @Builder.Default
     private List<MatchZonePricing> zonePricings = new ArrayList<>();
 
-
-
-    //nombre de tickets par match
+    // nombre de tickets par match
 
     // ---------- HISTORIQUE ----------
     @CreatedDate
@@ -92,6 +90,11 @@ public class Match {
     @LastModifiedBy
     @Column(name = "updated_by")
     private String updatedBy;
+
+    @Column(length = 3, nullable = false)
+    @Builder.Default
+    private String currency = "USD";
+    // nombre de tickets par match
 
     private boolean active = true; // Pour soft-delete
 

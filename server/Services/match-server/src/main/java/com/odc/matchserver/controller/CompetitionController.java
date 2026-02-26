@@ -5,6 +5,7 @@ import com.odc.matchserver.dto.competition.CompetitionResponseDTO;
 import com.odc.matchserver.services.CompetitionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.UUID;
 import com.odc.matchserver.enums.Continent;
 import org.springframework.data.domain.Page;

@@ -1,8 +1,32 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
-const TicketCard = ({ id, category, subcategory, available, price }) => {
+const TicketCard = ({
+  matchData,
+  category,
+  categoryData,
+  subcategory,
+  price,
+  ticketPrice = 0,
+}) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const [quantity, setQuantity] = useState(1);
+  const total = useMemo(() => Number(ticketPrice || 0) * quantity, [ticketPrice, quantity]);
+
+  const handleReserve = () => {
+    navigate("/checkout", {
+      state: {
+        matchId: matchData?.id,
+        matchZonePricingId: categoryData?.matchZonePricingId,
+        match: matchData,
+        category: categoryData,
+        quantity,
+        total,
+      },
+    });
+  };
 
   return (
     <div className="bg-white border border-[var(--border)] rounded-lg p-4 mb-3">
@@ -11,31 +35,29 @@ const TicketCard = ({ id, category, subcategory, available, price }) => {
           
           {/* Category */}
           <div>
-            <div className="text-xs text-[var(--muted-foreground)] mb-1">Catégorie</div>
+            <div className="text-xs text-[var(--muted-foreground)] mb-1">{t("ticketCard.category")}</div>
             <div className="text-sm font-medium">{category}</div>
             <div className="text-xs text-[var(--muted-foreground)]">{subcategory}</div>
           </div>
 
-          {/* Available */}
-          <div>
-            <div className="text-xs text-[var(--muted-foreground)] mb-1">Disponible</div>
-            <div className="text-sm font-medium mb-2">{available}</div>       
-          </div>
-
           {/* Price */}
           <div>
-            <div className="text-xs text-[var(--muted-foreground)] mb-1">Prix/billet</div>
+            <div className="text-xs text-[var(--muted-foreground)] mb-1">{t("ticketCard.pricePerTicket")}</div>
             <div className="text-sm font-medium">{price}</div>
           </div>
 
           {/* Quantity */}
           <div>
-            <div className="text-xs text-[var(--muted-foreground)] mb-1">Quantité</div>
-            <select className="w-full border border-[var(--border)] rounded px-2 py-1 text-sm bg-white">
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
-              <option>4</option>
+            <div className="text-xs text-[var(--muted-foreground)] mb-1">{t("ticketCard.quantity")}</div>
+            <select
+              value={quantity}
+              onChange={(e) => setQuantity(Number(e.target.value))}
+              className="w-full border border-[var(--border)] rounded px-2 py-1 text-sm bg-white"
+            >
+              <option value={1}>1</option>
+              <option value={2}>2</option>
+              <option value={3}>3</option>
+              <option value={4}>4</option>
             </select>
           </div>
         </div>
@@ -43,11 +65,11 @@ const TicketCard = ({ id, category, subcategory, available, price }) => {
         {/* Reserve Button */}
         <div className="flex items-center">
           <button
-            onClick={() => navigate(`/checkout/${id}`)}
+            onClick={handleReserve}
             className="px-6 py-2 rounded-lg text-white font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
             style={{ backgroundColor: "#4caf50" }}
           >
-            Réservez
+            {t("ticketCard.reserve")}
           </button>
         </div>
       </div>

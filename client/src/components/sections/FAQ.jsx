@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { PlusIcon, MinusIcon } from "@heroicons/react/24/outline";
+import { useTranslation } from "react-i18next";
 
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState(null);
+  const { t } = useTranslation();
 
   const faqs = [
     {
@@ -44,11 +46,11 @@ const FAQ = () => {
   };
 
   return (
-    <section className="py-10">
+    <section id="faq" className="py-10">
       <div className="max-w-[1024px] mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-bold text-center text-gray-900 mb-12 uppercase tracking-wide">
-            Frequently Asked Questions
+            {t("faq.title")}
           </h2>
 
           <div className="space-y-0">

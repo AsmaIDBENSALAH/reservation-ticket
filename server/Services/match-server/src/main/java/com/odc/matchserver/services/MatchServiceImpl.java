@@ -152,22 +152,26 @@ public class MatchServiceImpl implements MatchService {
         }
 
         @Override
-        public void decreaseAvailability(UUID matchId, UUID zoneId, int quantity) {
-                MatchZonePricing zone = matchZoneRepository
-                                .findByMatch_IdAndZone_Id(matchId, zoneId)
-                                .orElseThrow(() -> new ZoneNotFoundException("Zone not found for matchId: " + matchId));
+        public void decreaseAvailability(UUID matchId, UUID pricingId, int quantity) {
+                // On vérifie que le pricing existe ET qu'il appartient bien au bon match
+                MatchZonePricing pricing = matchZoneRepository.findById(pricingId)
+                                .orElseThrow(() -> new ZoneNotFoundException("Offre non trouvée"));
 
-                if (zone.getAvailableSeats() < quantity)
-                        throw new InsufficientSeatsException("Not enough available seats");
+                if (!pricing.getMatch().getId().equals(matchId)) {
+                        throw new RuntimeException("Sécurité : Cette zone n'appartient pas à ce match !");
+                }
 
-                zone.setAvailableSeats(zone.getAvailableSeats() - quantity);
-                matchZoneRepository.save(zone);
+                if (pricing.getAvailableSeats() < quantity)
+                        throw new InsufficientSeatsException("Places insuffisantes");
+
+                pricing.setAvailableSeats(pricing.getAvailableSeats() - quantity);
+                matchZoneRepository.save(pricing);
         }
 
         @Override
         public void increaseAvailability(UUID matchId, UUID zoneId, int quantity) {
                 MatchZonePricing zone = matchZoneRepository
-                                .findByMatch_IdAndZone_Id(matchId, zoneId)
+                                .findByMatch_IdAndId(matchId, zoneId)
                                 .orElseThrow(() -> new ZoneNotFoundException("Zone not found for matchId: " + matchId));
 
                 zone.setAvailableSeats(zone.getAvailableSeats() + quantity);
@@ -197,6 +201,13 @@ public class MatchServiceImpl implements MatchService {
         @Override
         public Page<MatchResponseDTO> getMatchesByDateRange(LocalDateTime from, LocalDateTime to, Pageable pageable) {
                 return matchRepository.findByDateTimeBetween(from, to, pageable)
+                                .map(matchMapper::toResponseDTO);
+
+        }
+
+        @Override
+        public Page<MatchResponseDTO> getMostPopularMatches(Pageable pageable) {
+                return matchRepository.findAllByOrderByAttendanceDesc(pageable)
                                 .map(matchMapper::toResponseDTO);
         }
 }
