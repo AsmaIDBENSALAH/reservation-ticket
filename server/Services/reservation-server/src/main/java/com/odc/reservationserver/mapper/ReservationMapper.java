@@ -46,7 +46,7 @@ public class ReservationMapper {
                 .totalPrice(reservation.getTotalPrice())
                 .status(reservation.getStatus())
                 .reservationDate(reservation.getReservationDate())
-                // ✅ Nouvelles infos miroir
+                // ✅ Nouvelles infos miroirz
                 .currency(reservation.getCurrency())
                 .homeTeam(reservation.getHomeTeam())
                 .awayTeam(reservation.getAwayTeam())

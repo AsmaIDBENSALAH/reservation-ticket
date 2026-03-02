@@ -1,11 +1,9 @@
 package com.odc.notificationserver.service;
 
-import com.odc.notificationserver.dto.PaymentResponseEvent;
 import com.odc.notificationserver.dto.ReservationConfirmedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 

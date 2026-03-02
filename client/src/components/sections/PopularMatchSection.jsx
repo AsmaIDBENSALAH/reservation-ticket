@@ -68,6 +68,8 @@ const PopularMatchSection = () => {
           : "",
     }),
   );
+
+  const visibleMatches = popularMatches.slice(0, 4);
   return (
     <section className="py-5">
       <div className="max-w-[1024px] mx-auto px-4">
@@ -80,20 +82,9 @@ const PopularMatchSection = () => {
             delay: 2000,
             disableOnInteraction: false,
           }}
-          loop={true}
-          breakpoints={{
-            0: {
-              slidesPerView: 1,
-            },
-            640: {
-              slidesPerView: 2,
-            },
-            1024: {
-              slidesPerView: 4,
-            },
-          }}
+          loop={false}
         >
-          {popularMatches.map((m) => (
+          {visibleMatches.map((m) => (
             <SwiperSlide key={m.id || `${m.teams}-${m.date}`}>
               <MatchCard
                 teams={m.teams}

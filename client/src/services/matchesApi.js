@@ -1,4 +1,4 @@
-import { getAuthHeader } from "./authHeader";
+import { authFetch } from "./authFetch";
 
 const BASE_URL = "";
 
@@ -27,47 +27,39 @@ const handleResponse = async (response) => {
   return data;
 };
 
-const getRequestOptions = () => ({
-  headers: {
-    "Content-Type": "application/json",
-    ...getAuthHeader(),
-  },
-});
-
 export const getMatches = async (params = {}) => {
-  const response = await fetch(
+  const response = await authFetch(
     `${BASE_URL}/api/matches${buildQueryString(params)}`,
-    getRequestOptions(),
+    { headers: { "Content-Type": "application/json" } },
   );
   return handleResponse(response);
 };
 
 export const getMatchById = async (id) => {
-  const response = await fetch(
-    `${BASE_URL}/api/matches/${id}`,
-    getRequestOptions(),
-  );
+  const response = await authFetch(`${BASE_URL}/api/matches/${id}`, {
+    headers: { "Content-Type": "application/json" },
+  });
   return handleResponse(response);
 };
 
 export const getMatchDetails = async (id) => {
-  const response = await fetch(
-    `${BASE_URL}/api/matches/${id}/details`,
-    getRequestOptions(),
-  );
+  const response = await authFetch(`${BASE_URL}/api/matches/${id}/details`, {
+    headers: { "Content-Type": "application/json" },
+  });
   return handleResponse(response);
 };
 
 export const getMatchesByStadium = async (stadiumId) => {
-  const response = await fetch(
-    `${BASE_URL}/api/matches/stadium/${stadiumId}`,
-    getRequestOptions(),
-  );
+  const response = await authFetch(`${BASE_URL}/api/matches/stadium/${stadiumId}`, {
+    headers: { "Content-Type": "application/json" },
+  });
   return handleResponse(response);
 };
 
 export const getMatchDates = async () => {
-  const response = await fetch(`${BASE_URL}/api/matches/dates`, getRequestOptions());
+  const response = await authFetch(`${BASE_URL}/api/matches/dates`, {
+    headers: { "Content-Type": "application/json" },
+  });
   return handleResponse(response);
 };
 
@@ -76,56 +68,55 @@ export const getMatchesByCompetition = async (
   page = 0,
   size = 10,
 ) => {
-  const response = await fetch(
+  const response = await authFetch(
     `${BASE_URL}/api/matches/competition/${competitionId}?page=${page}&size=${size}`,
-    getRequestOptions(),
+    { headers: { "Content-Type": "application/json" } },
   );
   return handleResponse(response);
 };
 
 export const getCompetitions = async (params = {}) => {
-  const response = await fetch(
+  const response = await authFetch(
     `${BASE_URL}/api/competitions${buildQueryString(params)}`,
-    getRequestOptions(),
+    { headers: { "Content-Type": "application/json" } },
   );
 
   if (response.ok) {
     return handleResponse(response);
   }
 
-  const fallbackResponse = await fetch(
+  const fallbackResponse = await authFetch(
     `${BASE_URL}/api/competition${buildQueryString(params)}`,
-    getRequestOptions(),
+    { headers: { "Content-Type": "application/json" } },
   );
   return handleResponse(fallbackResponse);
 };
 
 export const getCompetitionById = async (id) => {
-  const response = await fetch(
-    `${BASE_URL}/api/competition/${id}`,
-    getRequestOptions(),
-  );
+  const response = await authFetch(`${BASE_URL}/api/competition/${id}`, {
+    headers: { "Content-Type": "application/json" },
+  });
 
   if (response.ok) {
     return handleResponse(response);
   }
 
-  const fallbackResponse = await fetch(
-    `${BASE_URL}/api/competitions/${id}`,
-    getRequestOptions(),
-  );
+  const fallbackResponse = await authFetch(`${BASE_URL}/api/competitions/${id}`, {
+    headers: { "Content-Type": "application/json" },
+  });
   return handleResponse(fallbackResponse);
 };
 
 export const getTeamById = async (id) => {
-  const response = await fetch(`${BASE_URL}/api/teams/${id}`, getRequestOptions());
+  const response = await authFetch(`${BASE_URL}/api/teams/${id}`, {
+    headers: { "Content-Type": "application/json" },
+  });
   return handleResponse(response);
 };
 
 export const getStadiumById = async (id) => {
-  const response = await fetch(
-    `${BASE_URL}/api/stadiums/${id}`,
-    getRequestOptions(),
-  );
+  const response = await authFetch(`${BASE_URL}/api/stadiums/${id}`, {
+    headers: { "Content-Type": "application/json" },
+  });
   return handleResponse(response);
 };

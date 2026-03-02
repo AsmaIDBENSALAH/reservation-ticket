@@ -38,15 +38,46 @@ const resources = {
       },
       howItWorks: {
         title: "How does it work?",
-        step1Title: "Choose your match",
-        step1Desc: "Attend your favorite football match",
-        step2Title: "Choose your package",
-        step2Desc: "Enjoy an incomparable experience with our packages",
-        step3Title: "Choose your hotel",
-        step3Desc: "Choose your luxury hotel (optional)",
+        step1Title: "Pick a match",
+        step1Desc: "Browse matches or competitions, then open a match to view details.",
+        step2Title: "Select your tickets",
+        step2Desc: "Choose a stadium zone and quantity, then reserve to start checkout.",
+        step3Title: "Pay & track",
+        step3Desc: "Pay securely to confirm your reservation, then track it in “Track your Tickets”.",
       },
       faq: {
         title: "Frequently Asked Questions",
+        items: [
+          {
+            question: "How do I find a match to book?",
+            answer:
+              "Go to All Matches or Competitions, then open a match to see its details and available ticket zones.",
+          },
+          {
+            question: "How do I reserve tickets for a match?",
+            answer:
+              "On the match page, pick a stadium zone and quantity, then click Reserve to continue to checkout.",
+          },
+          {
+            question: "What payment method is supported?",
+            answer: "Checkout is card-based and runs through a secure payment form.",
+          },
+          {
+            question: "Why am I redirected if I open checkout directly?",
+            answer:
+              "Checkout requires match and ticket details selected from the match page, so it must be started from Reserve.",
+          },
+          {
+            question: "Where can I see my reservations after payment?",
+            answer:
+              "Open Track your Tickets from the header to view your reservation history (login required).",
+          },
+          {
+            question: "How do I change the language?",
+            answer:
+              "Use the language selector in the header to switch between EN, FR, and AR.",
+          },
+        ],
       },
       matchRow: {
         from: "From",
@@ -160,15 +191,47 @@ const resources = {
       },
       howItWorks: {
         title: "Comment ça marche ?",
-        step1Title: "Choisissez votre match",
-        step1Desc: "Assistez à votre match préféré",
-        step2Title: "Choisissez votre formule",
-        step2Desc: "Profitez d'une expérience incomparable",
-        step3Title: "Choisissez votre hôtel",
-        step3Desc: "Choisissez votre hôtel de luxe (optionnel)",
+        step1Title: "Choisissez un match",
+        step1Desc: "Parcourez les matchs ou les compétitions, puis ouvrez un match pour voir les détails.",
+        step2Title: "Sélectionnez vos billets",
+        step2Desc: "Choisissez une zone du stade et une quantité, puis réservez pour passer au paiement.",
+        step3Title: "Payez & suivez",
+        step3Desc: "Payez en toute sécurité pour confirmer la réservation, puis retrouvez-la dans « Suivre vos billets ».",
       },
       faq: {
         title: "Questions fréquentes",
+        items: [
+          {
+            question: "Comment trouver un match à réserver ?",
+            answer:
+              "Allez dans Tous les matchs ou Compétitions, puis ouvrez un match pour voir les détails et les zones disponibles.",
+          },
+          {
+            question: "Comment réserver des billets pour un match ?",
+            answer:
+              "Sur la page du match, choisissez une zone et une quantité, puis cliquez sur Réservez pour passer au paiement.",
+          },
+          {
+            question: "Quel moyen de paiement est pris en charge ?",
+            answer:
+              "Le paiement se fait par carte via un formulaire de paiement sécurisé.",
+          },
+          {
+            question: "Pourquoi suis-je redirigé si j’ouvre le checkout directement ?",
+            answer:
+              "Le checkout nécessite les informations du match et des billets, il doit être démarré depuis « Réservez ».",
+          },
+          {
+            question: "Où retrouver mes réservations après paiement ?",
+            answer:
+              "Ouvrez Suivre vos billets dans l’en-tête pour voir votre historique (connexion requise).",
+          },
+          {
+            question: "Comment changer de langue ?",
+            answer:
+              "Utilisez le sélecteur de langue dans l’en-tête pour passer à EN, FR ou AR.",
+          },
+        ],
       },
       matchRow: {
         from: "À partir de",
@@ -282,15 +345,46 @@ const resources = {
       },
       howItWorks: {
         title: "كيف يعمل؟",
-        step1Title: "اختر مباراتك",
-        step1Desc: "احضر مباراة فريقك المفضل",
-        step2Title: "اختر باقتك",
-        step2Desc: "استمتع بتجربة مميزة مع باقاتنا",
-        step3Title: "اختر فندقك",
-        step3Desc: "اختر فندقًا فاخرًا (اختياري)",
+        step1Title: "اختر مباراة",
+        step1Desc: "تصفح المباريات أو المسابقات، ثم افتح المباراة لعرض التفاصيل.",
+        step2Title: "حدد تذاكرك",
+        step2Desc: "اختر منطقة في الملعب والكمية، ثم اضغط «احجز» للانتقال للدفع.",
+        step3Title: "ادفع وتتبع",
+        step3Desc: "أكمل الدفع بأمان لتأكيد الحجز، ثم تتبعه من صفحة «تتبع تذاكرك».",
       },
       faq: {
         title: "الأسئلة الشائعة",
+        items: [
+          {
+            question: "كيف أجد مباراة للحجز؟",
+            answer:
+              "اذهب إلى كل المباريات أو المسابقات، ثم افتح المباراة لعرض التفاصيل والمناطق المتاحة للتذاكر.",
+          },
+          {
+            question: "كيف أحجز تذاكر لمباراة؟",
+            answer:
+              "في صفحة المباراة اختر المنطقة والكمية، ثم اضغط «احجز» للانتقال لصفحة الدفع.",
+          },
+          {
+            question: "ما طريقة الدفع المتاحة؟",
+            answer: "الدفع يتم بالبطاقة عبر نموذج دفع آمن.",
+          },
+          {
+            question: "لماذا يتم تحويلي إذا فتحت صفحة الدفع مباشرة؟",
+            answer:
+              "صفحة الدفع تحتاج تفاصيل المباراة والتذاكر، لذلك يجب البدء من زر «احجز».",
+          },
+          {
+            question: "أين أرى حجوزاتي بعد الدفع؟",
+            answer:
+              "افتح «تتبع تذاكرك» من الشريط العلوي لعرض سجل الحجوزات (يتطلب تسجيل الدخول).",
+          },
+          {
+            question: "كيف أغيّر اللغة؟",
+            answer:
+              "استخدم مُحدد اللغة في الشريط العلوي للتبديل بين EN وFR وAR.",
+          },
+        ],
       },
       matchRow: {
         from: "ابتداءً من",

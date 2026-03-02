@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { keycloakLogout } from "../../auth/keycloak";
 import { useAppSelector } from "../../store/hooks";
@@ -61,22 +60,10 @@ export default function UserDropdown() {
           </span>
         </div>
 
-        <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
-          <li>
-            <Link
-              to="/dashboard"
-              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5"
-              onClick={closeDropdown}
-            >
-              Dashboard
-            </Link>
-          </li>
-        </ul>
-
         <button
           type="button"
           onClick={() => void handleLogout()}
-          className="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-left text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5"
+          className="flex items-center gap-3 px-3 py-2 mt-4 font-medium text-left text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5"
         >
           Sign out
         </button>

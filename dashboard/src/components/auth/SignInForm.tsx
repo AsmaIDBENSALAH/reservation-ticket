@@ -1,6 +1,5 @@
-import { Link } from "react-router";
 import Button from "../ui/button/Button";
-import { keycloakLogin, keycloakRegister } from "../../auth/keycloak";
+import { keycloakLogin } from "../../auth/keycloak";
 
 export default function SignInForm() {
   return (
@@ -19,18 +18,7 @@ export default function SignInForm() {
           <Button className="w-full" size="sm" onClick={() => void keycloakLogin()}>
             Sign in with Keycloak
           </Button>
-
-          <Button className="w-full" size="sm" variant="outline" onClick={() => void keycloakRegister()}>
-            Create account
-          </Button>
         </div>
-
-        <p className="mt-5 text-sm text-gray-700 dark:text-gray-400">
-          Need registration page?{" "}
-          <Link to="/signup" className="text-brand-500 hover:text-brand-600 dark:text-brand-400">
-            Go to Sign Up
-          </Link>
-        </p>
       </div>
     </div>
   );

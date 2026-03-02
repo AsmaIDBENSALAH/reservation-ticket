@@ -1,4 +1,3 @@
-# Nom du service
 spring:
   application:
     name: gateway-service
@@ -53,6 +52,15 @@ spring:
             - Path=/api/reservations/**
           filters:
             - TokenRelay=
+            - name: Retry
+              args:
+                retries: 3
+                statuses:
+                  - INTERNAL_SERVER_ERROR
+                methods: GET,POST,PUT,DELETE
+                backoff:
+                  firstBackoff: 1s
+                  maxBackoff: 5s
 
         - id: payment-server
           uri: lb://PAYMENT-SERVER
@@ -82,4 +90,4 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka/
     register-with-eureka: true
-    fetch-registry: true
+    fetch-registry: true  

@@ -23,37 +23,39 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
 }) => {
   return (
     <div
-      className={`rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] ${className}`}
+      className={`group relative overflow-hidden rounded-3xl border border-gray-200/50 bg-white shadow-theme-lg backdrop-blur-sm transition-all hover:shadow-theme-xl dark:border-gray-700/50 dark:bg-gray-dark/80 ${className}`}
     >
       {/* Card Header */}
-      <div className="flex items-center justify-between px-6 py-4">
-        {/* Title + desc */}
-        <div className="space-y-1">
-          <h3 className="text-lg  text-gray-800 dark:text-white/90">
-            {title}
-          </h3>
-          {desc && (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {desc}
-            </p>
+      <div className="border-b border-gray-100 px-6 py-5 dark:border-white/5 sm:px-8 sm:py-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          {/* Title + desc */}
+          <div>
+            <h3 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+              {title}
+            </h3>
+            {desc && (
+              <p className="mt-1 text-xs font-bold uppercase tracking-widest text-gray-400">
+                {desc}
+              </p>
+            )}
+          </div>
+
+          {/* Optional Button */}
+          {addButton && (
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={addButton.onClick}
+              className={`h-10 rounded-xl px-5 text-sm font-bold !bg-blue-600 shadow-[0_8px_20px_-4px_rgba(37,99,235,0.35)] transition-all hover:scale-105 hover:!bg-blue-700 active:scale-95 disabled:hover:scale-100 disabled:shadow-none disabled:!bg-blue-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-dark ${addButton.className ?? ""}`}
+            >
+              {addButton.label}
+            </Button>
           )}
         </div>
-
-        {/* Optional Button */}
-        {addButton && (
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={addButton.onClick}
-            className={`h-9 px-4 text-sm ${addButton.className ?? ""}`}
-          >
-            {addButton.label}
-          </Button>
-        )}
       </div>
 
       {/* Card Body */}
-      <div className="border-t border-gray-100 p-4 dark:border-gray-800 sm:p-6">
+      <div className="p-4 sm:p-6">
         {children}
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { getAuthHeader } from "../../services/authHeader";
+import { authFetch } from "../../services/authFetch";
 import {
   getMatchById,
   getMatchDates,
@@ -113,12 +113,11 @@ export const fetchMostPopularMatches = createAsyncThunk(
   async (params = { page: 0, size: 10 }, { rejectWithValue }) => {
     try {
       const query = new URLSearchParams(params).toString();
-      const response = await fetch(
+      const response = await authFetch(
         `/api/matches/most-popular${query ? `?${query}` : ""}`,
         {
           headers: {
             "Content-Type": "application/json",
-            ...getAuthHeader(),
           },
         },
       );

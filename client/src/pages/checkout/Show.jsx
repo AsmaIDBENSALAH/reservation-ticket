@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import keycloak from "@/keycloak";
 import PageReload from "@/components/ui/PageReload";
 import { useTranslation } from "react-i18next";
+import { authFetch } from "@/services/authFetch";
 import {
   clearSelectedMatch,
   fetchMatchById,
@@ -66,11 +67,10 @@ const CheckoutPaymentContent = ({
         throw new Error("Missing reservation data. Please go back and select tickets.");
       }
 
-      const response = await fetch("http://localhost:8084/api/reservations", {
+      const response = await authFetch("http://localhost:8084/api/reservations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${keycloak.token}`,
         },
         body: JSON.stringify({
           matchId: reservationPayload.matchId,

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import keycloak from "@/keycloak";
 import { useTranslation } from "react-i18next";
-import { getAuthHeader } from "@/services/authHeader";
+import { authFetch } from "@/services/authFetch";
 
 const TicketsPage = () => {
   const { t, i18n } = useTranslation();
@@ -12,10 +12,9 @@ const TicketsPage = () => {
     const fetchMyHistory = async () => {
       try {
         setLoading(true);
-        const response = await fetch("/api/reservations/my-history", {
+        const response = await authFetch("/api/reservations/my-history", {
           headers: {
             "Content-Type": "application/json",
-            ...getAuthHeader(),
           },
         });
         const data = await response.json().catch(() => null);
@@ -23,7 +22,7 @@ const TicketsPage = () => {
           throw new Error(data?.message || "Failed to fetch ticket history");
         }
         setTickets(Array.isArray(data?.content) ? data.content : []);
-      } catch (error) {
+      } catch {
         setTickets([]);
       } finally {
         setLoading(false);
@@ -86,55 +85,53 @@ const TicketsPage = () => {
               {tickets?.map((ticket) => (
                 <div
                   key={ticket?.reservationId || ticket?.matchId}
-                  className="bg-white border border-gray-200 rounded-lg p-4"
+                  className="bg-white border border-gray-200 rounded-lg p-5 sm:p-6 shadow-sm"
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
-                    <p className="text-[10px] text-gray-500 uppercase tracking-wide">
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wider font-mono">
                       {ticket?.reservationId}
                     </p>
                     <span
-                      className={`text-xs font-semibold px-3 py-1 rounded-full ${getStatusClassName(ticket?.status)}`}
+                      className={`inline-flex items-center text-xs font-semibold px-3 py-1 rounded-full ring-1 ring-inset ring-black/5 ${getStatusClassName(ticket?.status)}`}
                     >
                       {ticket?.status}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between gap-4 mb-3">
+                  <div className="flex items-center justify-between gap-4 mb-4 rounded-lg bg-gray-50/80 border border-gray-100 px-3 py-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <img
                         src=""
                         alt={ticket?.homeTeam || "Home Team"}
-                        className="w-8 h-8 rounded object-cover bg-gray-100"
+                        className="hidden w-8 h-8 rounded object-cover bg-gray-100"
                       />
-                      <p className="font-semibold text-gray-900 text-sm">
+                      <p className="text-base font-semibold text-gray-900 truncate">
                         {ticket?.homeTeam}
                       </p>
                     </div>
-                    <p className="text-sm text-gray-600">vs</p>
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">vs</p>
                     <div className="flex items-center gap-2 min-w-0">
                       <img
                         src=""
                         alt={ticket?.awayTeam || "Away Team"}
-                        className="w-8 h-8 rounded object-cover bg-gray-100"
+                        className="hidden w-8 h-8 rounded object-cover bg-gray-100"
                       />
-                      <p className="font-semibold text-gray-900 text-sm">
+                      <p className="text-base font-semibold text-gray-900 truncate">
                         {ticket?.awayTeam}
                       </p>
                     </div>
                   </div>
 
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <p>{formatDate(ticket?.reservationDate)}</p>
+                  <div className="text-sm text-gray-600 leading-6 space-y-1">
+                    <p className="text-gray-700 font-medium">{formatDate(ticket?.reservationDate)}</p>
                     <p>{ticket?.stadeName}</p>
-                    <p>{t("tickets.zone")}: {ticket?.stadiumZone} - {ticket?.porte}</p>
+                    <p>
+                      {t("tickets.zone")}: {ticket?.stadiumZone} - {ticket?.porte}
+                    </p>
                     <p>Quantity: {ticket?.quantity}</p>
-                    <p>{t("tickets.price")}: {ticket?.totalPrice} {ticket?.currency}</p>
-                  </div>
-
-                  <div className="mt-4">
-                    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-gray-100 text-gray-700">
-                      {ticket?.matchId}
-                    </span>
+                    <p>
+                      {t("tickets.price")}: {ticket?.totalPrice} {ticket?.currency}
+                    </p>
                   </div>
                 </div>
               ))}

@@ -1,7 +1,7 @@
 services:
   postgresql-match:
     container_name: ms_pg_sql_match
-    image: postgres
+    image: postgres:16
     environment:
       POSTGRES_DB: matchdb
       POSTGRES_USER: admin
@@ -10,14 +10,14 @@ services:
     volumes:
       - postgres-match:/data/postgres
     ports:
-      - "5432:5432"
+      - "5433:5432"
     networks:
       - microservices-net
     restart: unless-stopped
 
   postgresql-reservation:
     container_name: ms_pg_sql_reservation
-    image: postgres
+    image: postgres:16
     environment:
       POSTGRES_DB: reservationdb
       POSTGRES_USER: admin
@@ -41,11 +41,10 @@ services:
     volumes:
       - pgadmin:/var/lib/pgadmin
     ports:
-      - "5050:80"
+      - "5051:80"
     networks:
       - microservices-net
     restart: unless-stopped
-
 
   mail-dev:
     container_name: ms-mail-dev
