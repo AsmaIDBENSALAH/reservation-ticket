@@ -19,7 +19,6 @@ public class MatchZonePricingMapper {
         return MatchZonePricing.builder()
                 .price(dto.getPrice())
                 .availableSeats(dto.getAvailableSeats())
-                .isActive(dto.getIsActive() != null ? dto.getIsActive() : true)
                 .match(match)
                 .zone(zone)
                 .active(true) // actif par défaut
@@ -36,13 +35,14 @@ public class MatchZonePricingMapper {
                 entity.getPrice(),
                 entity.getAvailableSeats(),
                 entity.getSoldSeats(),
-                entity.getIsActive(),
                 entity.getZone() != null ? entity.getZone().getId() : null,
+                entity.getZone() != null ? entity.getZone().getName() : null,
+
                 // ---------- HISTORIQUE ----------
-                entity.getCreatedAt(),
-                entity.getUpdatedAt(),
+                entity.getCreatedDate(),
+                entity.getLastModifiedDate(),
                 entity.getCreatedBy(),
-                entity.getUpdatedBy(),
+                entity.getLastModifiedBy(),
                 entity.isActive()
         );
     }

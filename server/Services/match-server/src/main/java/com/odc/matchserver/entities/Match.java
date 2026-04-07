@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Match {
+public class Match extends Auditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -73,25 +73,10 @@ public class Match {
     private List<MatchZonePricing> zonePricings = new ArrayList<>();
 
 
-
+    @Column(length = 3, nullable = false)
+    @Builder.Default
+    private String currency = "MAD";
     //nombre de tickets par match
-
-    // ---------- HISTORIQUE ----------
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @CreatedBy
-    @Column(name = "created_by", updatable = false)
-    private String createdBy;
-
-    @LastModifiedBy
-    @Column(name = "updated_by")
-    private String updatedBy;
 
     private boolean active = true; // Pour soft-delete
 

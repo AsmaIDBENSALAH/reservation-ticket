@@ -12,6 +12,7 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    // Méthode générique pour construire la réponse JSON
     private ResponseEntity<Object> buildResponse(Exception ex, HttpStatus status) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
@@ -34,22 +35,6 @@ public class GlobalExceptionHandler {
     })
     public ResponseEntity<Object> handleNotFoundExceptions(Exception ex) {
         return buildResponse(ex, HttpStatus.NOT_FOUND);
-    }
-
-    // Gestion des exceptions "CONFLICT"
-    @ExceptionHandler({
-            StadiumOccupiedException.class
-    })
-    public ResponseEntity<Object> handleConflictExceptions(Exception ex) {
-        return buildResponse(ex, HttpStatus.CONFLICT);
-    }
-
-    // Gestion des exceptions "BAD REQUEST"
-    @ExceptionHandler({
-            IllegalArgumentException.class
-    })
-    public ResponseEntity<Object> handleBadRequestExceptions(Exception ex) {
-        return buildResponse(ex, HttpStatus.BAD_REQUEST);
     }
 
     // Gestion des autres exceptions générales

@@ -44,4 +44,3 @@ public interface CompetitionService {
     // ----------------- 4 INTERNATIONAL -----------------
     Page<CompetitionResponseDTO> getInternationalCompetitions(Pageable pageable);
 }
-

@@ -1,4 +1,5 @@
 package com.odc.matchserver.dto.match;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MatchResponseDTO {
+
     private UUID id;
     private LocalDateTime dateTime;
     private String status;
@@ -20,10 +22,19 @@ public class MatchResponseDTO {
     private Integer attendance;
     private String referee;
     private String matchImageUrl;
-    private UUID stadiumId;
+    private String stadiumName;
     private UUID homeTeamId;
+    private String homeTeamName;
+    private String homeTeamAbbreviation;
+    private String homeTeamLogoUrl;
+
     private UUID awayTeamId;
+    private String awayTeamName;
+    private String awayTeamAbbreviation;
+    private String awayTeamLogoUrl;
     private UUID competitionId;
+    private String competitionName;
+    private String currency;
     private List<MatchZonePricingResponseDTO> zonePricings;
 
     // ---------- HISTORIQUE ----------

@@ -1,9 +1,9 @@
 spring:
   application:
-    name: discovery-service
+    name: discovery
   config:
-    import: configserver:http://localhost:8888
- # security:
+    import: configserver:http://config-server:8888
+      # security:
   #  oauth2:
    #   resourceserver:
     #    jwt:

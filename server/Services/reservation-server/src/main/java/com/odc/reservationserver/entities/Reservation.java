@@ -19,29 +19,37 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class Reservation {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private UUID userId;   // venant du user-service
-    private UUID matchId;  // venant du match-service
+    private String userId;
+    private UUID matchId;
 
     @Enumerated(EnumType.STRING)
-    private ReservationStatus status;
-    // PENDING, CONFIRMED, CANCELLED, EXPIRED
+    private ReservationStatus status; // PENDING, CONFIRMED, CANCELLED
 
-    private UUID stadiumZoneId; // VIP, NORMAL, VIRAGE
-    private String stadiumZone;
+    // L'ID technique qui lie le Match à la Zone et au Prix dans le match-service
+    private UUID matchZonePricingId;
+    private String userName;
+    private String userEmail;
+
+    // Données "miroir" pour éviter de refaire des appels Feign juste pour l'affichage
+    private String stadiumZoneName; // ex: "VIP", "Tribune Nord"
     private String porte;
 
-    private int quantity; // nombre de sièges demandés
-
+    private int quantity;
     private BigDecimal totalPrice;
-
     private LocalDateTime reservationDate;
 
-    @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL)
-    private List<Ticket> tickets;
-}
 
+    private String stripeToken;
+
+    private String currency;
+    private String homeTeam;
+    private String awayTeam;
+    private String competition;
+
+    private String stadeName;
+    private LocalDateTime matchDate;
+}

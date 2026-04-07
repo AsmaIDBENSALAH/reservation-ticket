@@ -13,4 +13,7 @@ public class MatchZoneDTO {
     private String zoneName;
     private int availableSeats;
     private BigDecimal price;
+
+    private String porte;
+
 }

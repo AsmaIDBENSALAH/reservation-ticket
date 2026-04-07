@@ -19,7 +19,9 @@ public class StadiumZoneResponseDTO {
     private String name;
     private Integer capacity;
     private String description;
+    private String porte;
     private StadiumMinimalDTO stadium;
+
 
     // ---------- HISTORIQUE ----------
     private LocalDateTime createdAt;

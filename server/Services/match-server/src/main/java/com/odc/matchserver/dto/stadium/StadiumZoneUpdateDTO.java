@@ -25,4 +25,7 @@ public class StadiumZoneUpdateDTO {
 
     @Size(max = 200, message = "La description ne peut pas dépasser 200 caractères")
     private String description;
+
+    private String porte;
+
 }

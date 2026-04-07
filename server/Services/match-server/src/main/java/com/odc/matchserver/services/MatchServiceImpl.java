@@ -25,178 +25,207 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MatchServiceImpl implements MatchService {
 
-        private final MatchRepository matchRepository;
-        private final StadiumRepository stadiumRepository;
-        private final TeamRepository teamRepository;
-        private final CompetitionRepository competitionRepository;
-        private final StadiumZoneRepository stadiumZoneRepository;
-        private final MatchZonePricingRepository matchZoneRepository;
-        private final MatchMapper matchMapper;
+    private final MatchRepository matchRepository;
+    private final StadiumRepository stadiumRepository;
+    private final TeamRepository teamRepository;
+    private final CompetitionRepository competitionRepository;
+    private final StadiumZoneRepository stadiumZoneRepository;
+    private final MatchZonePricingRepository matchZoneRepository;
+    private final MatchMapper matchMapper;
 
-        @Override
-        public Page<MatchResponseDTO> getAllMatches(Pageable pageable) {
-                return matchRepository.findAll(pageable)
-                                .map(matchMapper::toResponseDTO);
+    @Override
+    public Page<MatchResponseDTO> getAllMatches(Pageable pageable) {
+        return matchRepository.findAll(pageable)
+                .map(matchMapper::toResponseDTO);
+    }
+
+    @Override
+    public MatchResponseDTO getMatchById(UUID id) {
+        Match match = matchRepository.findById(id)
+                .orElseThrow(() -> new MatchNotFoundException("Match not found with id: " + id));
+        return matchMapper.toResponseDTO(match);
+    }
+
+    @Override
+    @Transactional
+    public MatchResponseDTO createMatch(MatchRequestDTO dto) {
+        Stadium stadium = stadiumRepository.findById(dto.getStadiumId())
+                .orElseThrow(() -> new StadiumNotFoundException(
+                        "Stadium not found with id: " + dto.getStadiumId()));
+
+        // Check 3 hours window around the match time
+        LocalDateTime from = dto.getDateTime().minusHours(3);
+        LocalDateTime to = dto.getDateTime().plusHours(3);
+
+        boolean isOccupied = matchRepository.existsByStadiumAndDateTimeRange(stadium, from, to);
+        if (isOccupied)
+            throw new StadiumOccupiedException("Stadium already occupied at this date/time");
+
+        Team homeTeam = teamRepository.findById(dto.getHomeTeamId())
+                .orElseThrow(() -> new TeamNotFoundException(
+                        "Home team not found with id: " + dto.getHomeTeamId()));
+        Team awayTeam = teamRepository.findById(dto.getAwayTeamId())
+                .orElseThrow(() -> new TeamNotFoundException(
+                        "Away team not found with id: " + dto.getAwayTeamId()));
+
+        Competition competition = null;
+        if (dto.getCompetitionId() != null) {
+            competition = competitionRepository.findById(dto.getCompetitionId())
+                    .orElseThrow(() -> new CompetitionNotFoundException(
+                            "Competition not found with id: " + dto.getCompetitionId()));
         }
 
-        @Override
-        public MatchResponseDTO getMatchById(UUID id) {
-                Match match = matchRepository.findById(id)
-                                .orElseThrow(() -> new MatchNotFoundException("Match not found with id: " + id));
-                return matchMapper.toResponseDTO(match);
+        Match match = MatchMapper.toEntity(dto, stadium, homeTeam, awayTeam, competition);
+        Match savedMatch = matchRepository.save(match);
+
+        if (dto.getZonePricings() != null && !dto.getZonePricings().isEmpty()) {
+            List<MatchZonePricing> zonePricings = dto.getZonePricings().stream()
+                    .map(z -> {
+                        StadiumZone zone = stadiumZoneRepository.findById(z.getZoneId())
+                                .orElseThrow(() -> new ZoneNotFoundException(
+                                        "Zone not found with id: "
+                                                + z.getZoneId()));
+                        return MatchZonePricingMapper.toEntity(z, savedMatch, zone);
+                    }).collect(Collectors.toList());
+
+            savedMatch.setZonePricings(zonePricings);
+            matchRepository.save(savedMatch);
         }
 
-        @Override
-        @Transactional
-        public MatchResponseDTO createMatch(MatchRequestDTO dto) {
-                Stadium stadium = stadiumRepository.findById(dto.getStadiumId())
-                                .orElseThrow(() -> new StadiumNotFoundException(
-                                                "Stadium not found with id: " + dto.getStadiumId()));
+        return matchMapper.toResponseDTO(savedMatch);
+    }
 
-                // Check 3 hours window around the match time
-                LocalDateTime from = dto.getDateTime().minusHours(3);
-                LocalDateTime to = dto.getDateTime().plusHours(3);
+    @Override
+    @Transactional
+    public MatchResponseDTO updateMatch(UUID id, MatchRequestDTO dto) {
+        Match match = matchRepository.findById(id)
+                .orElseThrow(() -> new MatchNotFoundException("Match not found with id: " + id));
+        System.out.println(match);
+        System.out.println(dto);
+        if (dto.getDateTime() != null)
+            match.setDateTime(dto.getDateTime());
+        if (dto.getStatus() != null)
+            match.setStatus(MatchStatus.valueOf(dto.getStatus()));
+        if (dto.getMatchNumber() != null)
+            match.setMatchNumber(dto.getMatchNumber());
+        if (dto.getAttendance() != null)
+            match.setAttendance(dto.getAttendance());
+        if (dto.getReferee() != null)
+            match.setReferee(dto.getReferee());
+        if (dto.getMatchImageUrl() != null)
+            match.setMatchImageUrl(dto.getMatchImageUrl());
+        if (dto.getCurrency() != null)
+            match.setCurrency(dto.getCurrency());
+        if (dto.getStadiumId() != null)
+            match.setStadium(
+                    stadiumRepository.findById(dto.getStadiumId())
+                            .orElseThrow(() -> new StadiumNotFoundException(
+                                    "Stadium not found with id: "
+                                            + dto.getStadiumId())));
 
-                boolean isOccupied = matchRepository.existsByStadiumAndDateTimeRange(stadium, from, to);
-                if (isOccupied)
-                        throw new StadiumOccupiedException("Stadium already occupied at this date/time");
+        if (dto.getHomeTeamId() != null)
+            match.setHomeTeam(
+                    teamRepository.findById(dto.getHomeTeamId())
+                            .orElseThrow(() -> new TeamNotFoundException(
+                                    "Home team not found with id: "
+                                            + dto.getHomeTeamId())));
 
-                Team homeTeam = teamRepository.findById(dto.getHomeTeamId())
-                                .orElseThrow(() -> new TeamNotFoundException(
-                                                "Home team not found with id: " + dto.getHomeTeamId()));
-                Team awayTeam = teamRepository.findById(dto.getAwayTeamId())
-                                .orElseThrow(() -> new TeamNotFoundException(
-                                                "Away team not found with id: " + dto.getAwayTeamId()));
+        if (dto.getAwayTeamId() != null)
+            match.setAwayTeam(
+                    teamRepository.findById(dto.getAwayTeamId())
+                            .orElseThrow(() -> new TeamNotFoundException(
+                                    "Away team not found with id: "
+                                            + dto.getAwayTeamId())));
 
-                Competition competition = null;
-                if (dto.getCompetitionId() != null) {
-                        competition = competitionRepository.findById(dto.getCompetitionId())
-                                        .orElseThrow(() -> new CompetitionNotFoundException(
-                                                        "Competition not found with id: " + dto.getCompetitionId()));
-                }
+        if (dto.getCompetitionId() != null)
+            match.setCompetition(
+                    competitionRepository.findById(dto.getCompetitionId())
+                            .orElseThrow(() -> new CompetitionNotFoundException(
+                                    "Competition not found with id: "
+                                            + dto.getCompetitionId())));
 
-                Match match = MatchMapper.toEntity(dto, stadium, homeTeam, awayTeam, competition);
-                Match savedMatch = matchRepository.save(match);
+        if (dto.getZonePricings() != null && !dto.getZonePricings().isEmpty()) {
+            // Supprimer les anciennes zones (orphanRemoval s'en charge)
+            match.getZonePricings().clear();
+            matchRepository.saveAndFlush(match);
 
-                if (dto.getZonePricings() != null && !dto.getZonePricings().isEmpty()) {
-                        List<MatchZonePricing> zonePricings = dto.getZonePricings().stream()
-                                        .map(z -> {
-                                                StadiumZone zone = stadiumZoneRepository.findById(z.getZoneId())
-                                                                .orElseThrow(() -> new ZoneNotFoundException(
-                                                                                "Zone not found with id: "
-                                                                                                + z.getZoneId()));
-                                                return MatchZonePricingMapper.toEntity(z, savedMatch, zone);
-                                        }).collect(Collectors.toList());
+            List<MatchZonePricing> updatedZones = dto.getZonePricings().stream()
+                    .map(z -> {
+                        StadiumZone zone = stadiumZoneRepository.findById(z.getZoneId())
+                                .orElseThrow(() -> new ZoneNotFoundException(
+                                        "Zone not found with id: " + z.getZoneId()));
+                        return MatchZonePricingMapper.toEntity(z, match, zone);
+                    }).collect(Collectors.toList());
 
-                        savedMatch.setZonePricings(zonePricings);
-                        matchRepository.save(savedMatch);
-                }
-
-                return matchMapper.toResponseDTO(savedMatch);
+            match.getZonePricings().addAll(updatedZones);
         }
 
-        @Override
-        public MatchResponseDTO updateMatch(UUID id, MatchRequestDTO dto) {
-                Match match = matchRepository.findById(id)
-                                .orElseThrow(() -> new MatchNotFoundException("Match not found with id: " + id));
+        return matchMapper.toResponseDTO(matchRepository.save(match));
+    }
 
-                if (dto.getDateTime() != null)
-                        match.setDateTime(dto.getDateTime());
-                if (dto.getStatus() != null)
-                        match.setStatus(MatchStatus.valueOf(dto.getStatus()));
-                if (dto.getMatchNumber() != null)
-                        match.setMatchNumber(dto.getMatchNumber());
-                if (dto.getAttendance() != null)
-                        match.setAttendance(dto.getAttendance());
-                if (dto.getReferee() != null)
-                        match.setReferee(dto.getReferee());
-                if (dto.getMatchImageUrl() != null)
-                        match.setMatchImageUrl(dto.getMatchImageUrl());
+    @Override
+    @Transactional
+    public void deleteMatch(UUID id) {
+        Match match = matchRepository.findById(id)
+                .orElseThrow(() -> new MatchNotFoundException("Match not found with id: " + id));
+        match.setActive(false);
+        match.getZonePricings().forEach(zone -> {
+            zone.setActive(false);
+            matchZoneRepository.save(zone);
+        });
+        matchRepository.save(match);
+    }
 
-                if (dto.getStadiumId() != null)
-                        match.setStadium(
-                                        stadiumRepository.findById(dto.getStadiumId())
-                                                        .orElseThrow(() -> new StadiumNotFoundException(
-                                                                        "Stadium not found with id: "
-                                                                                        + dto.getStadiumId())));
+    @Override
+    public void decreaseAvailability(UUID matchId, UUID pricingId, int quantity) {
+        // On vérifie que le pricing existe ET qu'il appartient bien au bon match
+        MatchZonePricing pricing = matchZoneRepository.findById(pricingId)
+                .orElseThrow(() -> new ZoneNotFoundException("Offre non trouvée"));
 
-                if (dto.getHomeTeamId() != null)
-                        match.setHomeTeam(
-                                        teamRepository.findById(dto.getHomeTeamId())
-                                                        .orElseThrow(() -> new TeamNotFoundException(
-                                                                        "Home team not found with id: "
-                                                                                        + dto.getHomeTeamId())));
-
-                if (dto.getAwayTeamId() != null)
-                        match.setAwayTeam(
-                                        teamRepository.findById(dto.getAwayTeamId())
-                                                        .orElseThrow(() -> new TeamNotFoundException(
-                                                                        "Away team not found with id: "
-                                                                                        + dto.getAwayTeamId())));
-
-                if (dto.getCompetitionId() != null)
-                        match.setCompetition(
-                                        competitionRepository.findById(dto.getCompetitionId())
-                                                        .orElseThrow(() -> new CompetitionNotFoundException(
-                                                                        "Competition not found with id: "
-                                                                                        + dto.getCompetitionId())));
-
-                return matchMapper.toResponseDTO(matchRepository.save(match));
+        if (!pricing.getMatch().getId().equals(matchId)) {
+            throw new RuntimeException("Sécurité : Cette zone n'appartient pas à ce match !");
         }
 
-        @Override
-        public void deleteMatch(UUID id) {
-                Match match = matchRepository.findById(id)
-                                .orElseThrow(() -> new MatchNotFoundException("Match not found with id: " + id));
-                matchRepository.delete(match);
-        }
+        if (pricing.getAvailableSeats() < quantity)
+            throw new InsufficientSeatsException("Places insuffisantes");
 
-        @Override
-        public void decreaseAvailability(UUID matchId, UUID zoneId, int quantity) {
-                MatchZonePricing zone = matchZoneRepository
-                                .findByMatch_IdAndZone_Id(matchId, zoneId)
-                                .orElseThrow(() -> new ZoneNotFoundException("Zone not found for matchId: " + matchId));
+        pricing.setAvailableSeats(pricing.getAvailableSeats() - quantity);
+        matchZoneRepository.save(pricing);
+    }
 
-                if (zone.getAvailableSeats() < quantity)
-                        throw new InsufficientSeatsException("Not enough available seats");
+    @Override
+    public void increaseAvailability(UUID matchId, UUID zoneId, int quantity) {
+        MatchZonePricing zone = matchZoneRepository
+                .findByMatch_IdAndId(matchId, zoneId)
+                .orElseThrow(() -> new ZoneNotFoundException("Zone not found for matchId: " + matchId));
 
-                zone.setAvailableSeats(zone.getAvailableSeats() - quantity);
-                matchZoneRepository.save(zone);
-        }
+        zone.setAvailableSeats(zone.getAvailableSeats() + quantity);
+        matchZoneRepository.save(zone);
+    }
 
-        @Override
-        public void increaseAvailability(UUID matchId, UUID zoneId, int quantity) {
-                MatchZonePricing zone = matchZoneRepository
-                                .findByMatch_IdAndZone_Id(matchId, zoneId)
-                                .orElseThrow(() -> new ZoneNotFoundException("Zone not found for matchId: " + matchId));
+    @Override
+    public MatchDetailsDTO getMatchDetails(UUID matchId) {
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new MatchNotFoundException("Match not found with id: " + matchId));
+        return matchMapper.toMatchDetailsDTO(match);
+    }
 
-                zone.setAvailableSeats(zone.getAvailableSeats() + quantity);
-                matchZoneRepository.save(zone);
-        }
+    // ----------------- FILTER METHODS -----------------
+    @Override
+    public Page<MatchResponseDTO> getMatchesByCompetition(UUID competitionId, Pageable pageable) {
+        return matchRepository.findByCompetition_Id(competitionId, pageable)
+                .map(matchMapper::toResponseDTO);
+    }
 
-        @Override
-        public MatchDetailsDTO getMatchDetails(UUID matchId) {
-                Match match = matchRepository.findById(matchId)
-                                .orElseThrow(() -> new MatchNotFoundException("Match not found with id: " + matchId));
-                return matchMapper.toMatchDetailsDTO(match);
-        }
+    @Override
+    public Page<MatchResponseDTO> getMatchesByStadium(UUID stadiumId, Pageable pageable) {
+        return matchRepository.findByStadium_Id(stadiumId, pageable)
+                .map(matchMapper::toResponseDTO);
+    }
 
-        // ----------------- FILTER METHODS -----------------
-        @Override
-        public Page<MatchResponseDTO> getMatchesByCompetition(UUID competitionId, Pageable pageable) {
-                return matchRepository.findByCompetition_Id(competitionId, pageable)
-                                .map(matchMapper::toResponseDTO);
-        }
-
-        @Override
-        public Page<MatchResponseDTO> getMatchesByStadium(UUID stadiumId, Pageable pageable) {
-                return matchRepository.findByStadium_Id(stadiumId, pageable)
-                                .map(matchMapper::toResponseDTO);
-        }
-
-        @Override
-        public Page<MatchResponseDTO> getMatchesByDateRange(LocalDateTime from, LocalDateTime to, Pageable pageable) {
-                return matchRepository.findByDateTimeBetween(from, to, pageable)
-                                .map(matchMapper::toResponseDTO);
-        }
+    @Override
+    public Page<MatchResponseDTO> getMatchesByDateRange(LocalDateTime from, LocalDateTime to, Pageable pageable) {
+        return matchRepository.findByDateTimeBetween(from, to, pageable)
+                .map(matchMapper::toResponseDTO);
+    }
 }

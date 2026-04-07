@@ -4,6 +4,7 @@ import com.odc.matchserver.dto.competition.CompetitionRequestDTO;
 import com.odc.matchserver.dto.competition.CompetitionResponseDTO;
 import com.odc.matchserver.services.CompetitionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,8 +14,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
+
 @RestController
 @RequestMapping("/api/competitions")
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class CompetitionController {
 
@@ -25,7 +28,8 @@ public class CompetitionController {
     public Page<CompetitionResponseDTO> getAllCompetitions(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sortBy) {
+            @RequestParam(defaultValue = "name") String sortBy
+    ) {
         return competitionService.getAllCompetitions(PageRequest.of(page, size, Sort.by(sortBy)));
     }
 
@@ -38,7 +42,10 @@ public class CompetitionController {
     // ----------------- CREATE COMPETITION -----------------
     @PostMapping
     public CompetitionResponseDTO createCompetition(
-            @RequestBody CompetitionRequestDTO dto) {
+            @RequestBody CompetitionRequestDTO dto,
+            @RequestParam(required = false) UUID countryId,
+            @RequestParam(required = false) Continent continent
+    ) {
         return competitionService.createCompetition(dto);
     }
 
@@ -48,7 +55,8 @@ public class CompetitionController {
             @PathVariable UUID id,
             @RequestBody CompetitionRequestDTO dto,
             @RequestParam(required = false) UUID countryId,
-            @RequestParam(required = false) Continent continent) {
+            @RequestParam(required = false) Continent continent
+    ) {
         return competitionService.updateCompetition(id, dto, countryId, continent);
     }
 
@@ -64,7 +72,8 @@ public class CompetitionController {
             @RequestParam Continent continent,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sortBy) {
+            @RequestParam(defaultValue = "name") String sortBy
+    ) {
         return competitionService.getContinentalCompetitions(continent, PageRequest.of(page, size, Sort.by(sortBy)));
     }
 
@@ -74,7 +83,8 @@ public class CompetitionController {
             @RequestParam UUID countryId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sortBy) {
+            @RequestParam(defaultValue = "name") String sortBy
+    ) {
         return competitionService.getNationalCompetitions(countryId, PageRequest.of(page, size, Sort.by(sortBy)));
     }
 
@@ -84,7 +94,8 @@ public class CompetitionController {
             @RequestParam List<UUID> countryIds,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sortBy) {
+            @RequestParam(defaultValue = "name") String sortBy
+    ) {
         return competitionService.getRegionalCompetitions(countryIds, PageRequest.of(page, size, Sort.by(sortBy)));
     }
 
@@ -93,7 +104,8 @@ public class CompetitionController {
     public Page<CompetitionResponseDTO> getInternationalCompetitions(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sortBy) {
+            @RequestParam(defaultValue = "name") String sortBy
+    ) {
         return competitionService.getInternationalCompetitions(PageRequest.of(page, size, Sort.by(sortBy)));
     }
 }

@@ -35,6 +35,7 @@ public class MatchMapper {
                 .homeTeam(homeTeam)
                 .awayTeam(awayTeam)
                 .competition(competition)
+                .currency(dto.getCurrency())
                 .active(true) // actif par défaut
                 .build();
         // createdAt, updatedAt, createdBy, updatedBy sont gérés automatiquement par JPA
@@ -52,10 +53,26 @@ public class MatchMapper {
                 match.getAttendance(),
                 match.getReferee(),
                 match.getMatchImageUrl(),
-                match.getStadium() != null ? match.getStadium().getId() : null,
+
+                // stadiumName
+                match.getStadium() != null ? match.getStadium().getName() : null,
+
+                // home team
                 match.getHomeTeam() != null ? match.getHomeTeam().getId() : null,
+                match.getHomeTeam() != null ? match.getHomeTeam().getName() : null,
+                match.getHomeTeam() != null ? match.getHomeTeam().getAbbreviation() : null,
+                match.getHomeTeam() != null ? match.getHomeTeam().getLogoUrl() : null,
+
+                // away team
                 match.getAwayTeam() != null ? match.getAwayTeam().getId() : null,
+                match.getAwayTeam() != null ? match.getAwayTeam().getName() : null,
+                match.getAwayTeam() != null ? match.getAwayTeam().getAbbreviation() : null,
+                match.getAwayTeam() != null ? match.getAwayTeam().getLogoUrl() : null,
+
+                // competition
                 match.getCompetition() != null ? match.getCompetition().getId() : null,
+                match.getCompetition() != null ? match.getCompetition().getName() : null,
+                match.getCurrency(),
                 match.getZonePricings() != null
                         ? match.getZonePricings()
                         .stream()
@@ -63,10 +80,10 @@ public class MatchMapper {
                         .collect(Collectors.toList())
                         : null,
                 // ---------- HISTORIQUE ----------
-                match.getCreatedAt(),
-                match.getUpdatedAt(),
+                match.getCreatedDate(),
+                match.getLastModifiedDate(),
                 match.getCreatedBy(),
-                match.getUpdatedBy(),
+                match.getLastModifiedBy(),
                 match.isActive()
         );
     }
@@ -74,7 +91,6 @@ public class MatchMapper {
     public MatchDetailsDTO toMatchDetailsDTO(Match match) {
         if (match == null) return null;
 
-        // Convertir les zones
         List<MatchZoneDTO> zones = match.getZonePricings()
                 .stream()
                 .map(this::toMatchZoneDTO)
@@ -83,8 +99,12 @@ public class MatchMapper {
         return MatchDetailsDTO.builder()
                 .matchId(match.getId())
                 .date(match.getDateTime())
-                .address(match.getStadium().getAddress())
-                .competition(match.getCompetition().getName())
+                .address(match.getStadium() != null ? match.getStadium().getAddress() : null)
+                .stadeName(match.getStadium() != null ? match.getStadium().getName() : null)       // ✅
+                .competition(match.getCompetition() != null ? match.getCompetition().getName() : null)
+                .currency(match.getCurrency())
+                .homeTeam(match.getHomeTeam() != null ? match.getHomeTeam().getName() : null)      // ✅
+                .awayTeam(match.getAwayTeam() != null ? match.getAwayTeam().getName() : null)      // ✅
                 .zones(zones)
                 .build();
     }
@@ -95,6 +115,7 @@ public class MatchMapper {
                 .zoneName(zone.getZone().getName())
                 .availableSeats(zone.getAvailableSeats())
                 .price(zone.getPrice())
+                .porte(zone.getZone().getPorte())
                 .build();
     }
 }

@@ -8,12 +8,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/stadiums")
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class StadiumController {
 
@@ -34,6 +36,7 @@ public class StadiumController {
     // ---------------- CREATE ----------------
     @PostMapping
     public ResponseEntity<StadiumMinimalDTO> create(@RequestBody StadiumRequestDTO dto) {
+        System.out.println(dto);
         StadiumMinimalDTO created = stadiumService.create(dto);
         return ResponseEntity.ok(created);
     }

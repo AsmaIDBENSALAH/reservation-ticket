@@ -28,10 +28,10 @@ public class CountryMapper {
                 .name(country.getName())
                 .continentName(country.getContinent())
                 // ---------- HISTORIQUE ----------
-                .createdAt(country.getCreatedAt())
-                .updatedAt(country.getUpdatedAt())
+                .createdAt(country.getCreatedDate())
+                .updatedAt(country.getLastModifiedDate())
                 .createdBy(country.getCreatedBy())
-                .updatedBy(country.getUpdatedBy())
+                .updatedBy(country.getLastModifiedBy())
                 .active(country.isActive())
                 .build();
     }
