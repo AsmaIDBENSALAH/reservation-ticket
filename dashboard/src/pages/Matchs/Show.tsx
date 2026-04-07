@@ -1,108 +1,82 @@
-import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { useState } from "react";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import ComponentCard from "../../components/common/ComponentCard";
 import PaginatedTable from "../../components/tables/PaginatedTable";
 import { useModal } from "../../hooks/useModal";
 import Create from "./Create";
-import { deleteMatch, fetchMatches, updateMatch } from "../../features/matchs/matchSlice";
-import type { MatchResponse } from "../../features/matchs/matchTypes";
+
+interface ZonePricing {
+  zoneName: string;
+  price: number;
+  availableSeats: number;
+  isActive: boolean;
+}
+
+interface Match {
+  id: string;
+  dateTime: string;
+  status: string;
+  matchNumber: string;
+  attendance: number;
+  referee: string;
+  stadiumName: string;
+  homeTeam: string;
+  awayTeam: string;
+  competition: string;
+  zonePricings: ZonePricing[];
+}
 
 export default function ShowMatches() {
-    const dispatch = useAppDispatch();
-    const { list: matches, pagination } = useAppSelector((state) => state.matches);
-    const { isOpen, openModal, closeModal } = useModal();
-    const [page, setPage] = useState(0);
+  const { isOpen, openModal, closeModal } = useModal();
+  const [page, setPage] = useState(0);
+  const totalPages = 1;
 
-    // **State pour match en édition**
-    const [editingMatch, setEditingMatch] = useState<MatchResponse | null>(null);
+  const fakeMatches: Match[] = [
+    {
+      id: "1",
+      dateTime: "2026-02-15T16:50:13.104Z",
+      status: "Scheduled",
+      matchNumber: "M001",
+      attendance: 5000,
+      referee: "Ref 1",
+      stadiumName: "Stadium A",
+      homeTeam: "Morocco",
+      awayTeam: "Spain",
+      competition: "World Cup",
+      zonePricings: [
+        { zoneName: "VIP", price: 50, availableSeats: 50, isActive: true },
+        { zoneName: "Regular", price: 20, availableSeats: 200, isActive: true },
+      ],
+    },
+  ];
 
-    useEffect(() => {
-        void dispatch(fetchMatches({ page, size: pagination.size }));
-    }, [dispatch, page, pagination.size]);
+  const columns = [
+    { header: "Match Number", render: (row: Match) => row.matchNumber },
+    { header: "Date & Time", render: (row: Match) => new Date(row.dateTime).toLocaleString() },
+    { header: "Stadium", render: (row: Match) => row.stadiumName },
+    { header: "Home Team", render: (row: Match) => row.homeTeam },
+    { header: "Away Team", render: (row: Match) => row.awayTeam },
+    { header: "Status", render: (row: Match) => row.status },
+    {
+      header: "Zone Pricing",
+      render: (row: Match) =>
+        row.zonePricings.map((z) => `${z.zoneName}: $${z.price}`).join(", "),
+    },
+  ];
 
-    // **Fonction handleEdit pour ouvrir modal avec match**
-    const handleEdit = (match: MatchResponse) => {
-        setEditingMatch(match); // on met le match en édition
-        openModal();            // on ouvre le modal
-    };
+  return (
+    <>
+      <PageMeta title="Matches | chritickets" description="All matches" />
+      <PageBreadcrumb pageTitle="Matches" />
 
-    const handleDelete = async (match: MatchResponse) => {
-        if (!confirm(`Are you sure you want to delete match ${match.matchNumber}?`)) return;
-        try {
-            await dispatch(deleteMatch(match.id)).unwrap();
-            alert("Match deleted!");
-            void dispatch(fetchMatches({ page, size: pagination.size }));
-        } catch (error: any) {
-            console.error("Error deleting match:", error);
-            alert(error.message || "Error deleting match");
-        }
-    };
+      <div className="space-y-6">
+        <ComponentCard title="All Matches" addButton={{ label: "Add Match +", onClick: openModal }}>
+          <PaginatedTable columns={columns} data={fakeMatches} page={page} totalPages={totalPages} onPageChange={setPage} />
+        </ComponentCard>
+      </div>
 
-    const handleChangeStatus = async (match: MatchResponse) => {
-        const newStatus = prompt("Enter new status (SCHEDULED, FINISHED, CANCELLED):", match.status);
-        if (!newStatus) return;
-        try {
-            await dispatch(updateMatch({ matchId: match.id, payload: { status: newStatus } })).unwrap();
-            alert("Status updated!");
-            void dispatch(fetchMatches({ page, size: pagination.size }));
-        } catch (error: any) {
-            console.error("Error updating status:", error);
-            alert(error.message || "Error updating status");
-        }
-    };
-
-    const columns = [
-        { header: "Match Number", render: (row: MatchResponse) => row.matchNumber },
-        { header: "Date & Time", render: (row: MatchResponse) => new Date(row.dateTime).toLocaleString() },
-        { header: "Stadium", render: (row: MatchResponse) => row.stadiumName },
-        { header: "Home Team", render: (row: MatchResponse) => row.homeTeamName },
-        { header: "Away Team", render: (row: MatchResponse) => row.awayTeamName },
-        { header: "Status", render: (row: MatchResponse) => row.status },
-        {
-            header: "Zone Pricing",
-            render: (row: MatchResponse) =>
-                row.zonePricings.map((z) => `${z.name}: ${z.price} ${row.currency}`).join(", "),
-        },
-        {
-            header: "Actions",
-            render: (row: MatchResponse) => (
-                <div className="flex gap-2">
-                    <button className="px-2 py-1 bg-blue-500 text-white rounded" onClick={() => handleEdit(row)}>Edit</button>
-                    <button className="px-2 py-1 bg-red-500 text-white rounded" onClick={() => handleDelete(row)}>Delete</button>
-                    <button className="px-2 py-1 bg-yellow-500 text-white rounded" onClick={() => handleChangeStatus(row)}>Change Status</button>
-                </div>
-            ),
-        },
-    ];
-
-    return (
-        <>
-            <PageMeta title="Matches | chritickets" description="All matches" />
-            <PageBreadcrumb pageTitle="Matches" />
-
-            <div className="space-y-6">
-                <ComponentCard title="All Matches" addButton={{ label: "Add Match +", onClick: openModal }}>
-                    <PaginatedTable
-                        columns={columns}
-                        data={matches}
-                        page={page}
-                        totalPages={pagination.totalPages}
-                        onPageChange={setPage}
-                    />
-                </ComponentCard>
-            </div>
-
-            {/* Passer le match en édition au modal */}
-            <Create
-                isOpen={isOpen}
-                closeModal={() => {
-                    setEditingMatch(null); // reset après fermeture
-                    closeModal();
-                }}
-                editingMatch={editingMatch}
-            />
-        </>
-    );
+      <Create isOpen={isOpen} closeModal={closeModal} />
+    </>
+  );
 }

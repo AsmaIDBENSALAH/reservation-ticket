@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Modal } from "../../components/ui/modal";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
 import Select from "../../components/form/Select";
 import Button from "../../components/ui/button/Button";
-import { getCountries } from "../../features/countries/countriesApi"
 
 interface Props {
   isOpen: boolean;
@@ -18,64 +17,23 @@ export default function Create({ isOpen, closeModal }: Props) {
     teamType: "CLUB",
     scope: "NATIONAL",
     countryId: "",
-    countryIds: [] as string[],
     continent: "",
     description: "",
   });
-  const [countries, setCountries] = useState<{ value: string; label: string }[]>([]);
-  useEffect(() => {
-    const fetchCountries = async () => {
-      const res = await getCountries({ page: 0, size: 200 });
-      const options = res.content.map((c) => ({
-        value: c.id,   // UUID
-        label: c.name, // Nom lisible
-      }));
-      setCountries(options);
-      console.log("fff")
-    };
-
-    fetchCountries();
-  }, []);
 
   const handleChange = (field: string, value: any) => {
-    if (field === "scope") {
-      setForm({
-        ...form,
-        scope: value,
-        countryId: "",
-        countryIds: [],
-        continent: "",
-      });
-    } else {
-      setForm({ ...form, [field]: value });
-    }
+    setForm({ ...form, [field]: value });
   };
 
   const handleSubmit = () => {
-    const payload: any = {
-      name: form.name,
-      abbreviation: form.abbreviation,
-      teamType: form.teamType,
-      scope: form.scope,
-      description: form.description,
-    };
-
-    if (form.scope === "NATIONAL") {
-      payload.countryId = form.countryId; // UUID
-    }
-
-    if (form.scope === "REGIONAL") {
-      payload.countryIds = form.countryIds; // UUID[]
-    }
-
-    if (form.scope === "CONTINENTAL") {
-      payload.continent = form.continent;
-    }
-
-    console.log("Payload final:", payload);
+    console.log("Submitting Competition:", form);
+    closeModal();
   };
 
-
+  const countryOptions = [
+    { value: "1", label: "Morocco" },
+    { value: "2", label: "Spain" },
+  ];
 
   const teamTypeOptions = [
     { value: "CLUB", label: "Club" },
@@ -85,7 +43,6 @@ export default function Create({ isOpen, closeModal }: Props) {
   const scopeOptions = [
     { value: "NATIONAL", label: "National" },
     { value: "CONTINENTAL", label: "Continental" },
-    { value: "REGIONAL", label: "Regional" },
     { value: "GLOBAL", label: "Global" },
   ];
 
@@ -129,55 +86,31 @@ export default function Create({ isOpen, closeModal }: Props) {
             <div>
               <Label>Scope</Label>
               <Select
-                  options={scopeOptions}
-                  placeholder="Select scope"
-                  onChange={(value) => handleChange("scope", value)}
+                options={scopeOptions}
+                placeholder="Select scope"
+                onChange={(value) => handleChange("scope", value)}
+                className="dark:bg-dark-900"
               />
             </div>
 
+            <div>
+              <Label>Country</Label>
+              <Select
+                options={countryOptions}
+                placeholder="Select country"
+                onChange={(value) => handleChange("countryId", value)}
+                className="dark:bg-dark-900"
+              />
+            </div>
 
-
-            {/* NATIONAL => 1 country */}
-            {form.scope === "NATIONAL" && (
-                <div>
-                  <Label>Country</Label>
-                  <Select
-                      options={countries}
-                      placeholder="Select country"
-                      onChange={(value) => handleChange("countryId", value)}
-                  />
-                </div>
-            )}
-
-            {/* REGIONAL => plusieurs countries */}
-            {form.scope === "REGIONAL" && (
-                <div>
-                  <Label>Countries</Label>
-                  <Select
-                      options={countries}
-                      placeholder="Select country"
-                      onChange={(value) =>
-                          handleChange("countryIds", [...form.countryIds, value])
-                      }
-                  />
-                </div>
-            )}
-
-            {/* CONTINENTAL */}
-            {form.scope === "CONTINENTAL" && (
-                <div>
-                  <Label>Continent</Label>
-                  <Select
-                      options={[
-                        { value: "AFRICA", label: "Africa" },
-                        { value: "EUROPE", label: "Europe" },
-                        { value: "ASIA", label: "Asia" },
-                      ]}
-                      placeholder="Select continent"
-                      onChange={(value) => handleChange("continent", value)}
-                  />
-                </div>
-            )}
+            <div>
+              <Label>Continent</Label>
+              <Input
+                type="text"
+                value={form.continent}
+                onChange={(e) => handleChange("continent", e.target.value)}
+              />
+            </div>
           </div>
 
           <div>

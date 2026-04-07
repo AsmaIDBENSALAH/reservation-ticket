@@ -1,7 +1,10 @@
 services:
+  # =====================
+  # DATABASES
+  # =====================
   postgresql-match:
-    container_name: ms_pg_sql_match
     image: postgres
+    container_name: ms_pg_sql_match
     environment:
       POSTGRES_DB: matchdb
       POSTGRES_USER: admin
@@ -16,8 +19,8 @@ services:
     restart: unless-stopped
 
   postgresql-reservation:
-    container_name: ms_pg_sql_reservation
     image: postgres
+    container_name: ms_pg_sql_reservation
     environment:
       POSTGRES_DB: reservationdb
       POSTGRES_USER: admin
@@ -46,40 +49,16 @@ services:
       - microservices-net
     restart: unless-stopped
 
-  mongodb:
-    image: mongo
-    container_name: mongo_db
-    ports:
-      - 27017:27017
-    volumes:
-      - mongo:/data
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=admin
-
-  mongo-express:
-    image: mongo-express
-    container_name: mongo_express
-    restart: always
-    ports:
-      - 8081:8081
-    environment:
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=admin
-      - ME_CONFIG_MONGODB_SERVER=mongodb
-
-  mail-dev:
-    container_name: ms-mail-dev
-    image: maildev/maildev
-    ports:
-      - 1080:1080
-      - 1025:1025
-
+  # =====================
+  # KAFKA
+  # =====================
   kafka:
     image: apache/kafka:3.7.0
     container_name: kafka
     ports:
       - "9092:9092"
+    networks:
+      - microservices-net
     environment:
       - KAFKA_NODE_ID=1
       - KAFKA_PROCESS_ROLES=broker,controller
@@ -93,37 +72,32 @@ services:
       - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
       - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
       - KAFKA_NUM_PARTITIONS=1
-    networks:
-      - microservices-net
 
-  match-service:
-    container_name: match-server
-    build: ./Services/match-server
+  # =====================
+  # CONFIG SERVER
+  # =====================
+  config-server:
+    container_name: config-server
+    build: server/Services/config-server
     ports:
-      - "8082:8080"
-    depends_on:
-      - postgresql-match
+      - "8888:8888"
     networks:
       - microservices-net
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql-match:5432/matchdb
-      SPRING_DATASOURCE_USERNAME: admin
-      SPRING_DATASOURCE_PASSWORD: admin
 
-  reservation-service:
-    container_name: reservation-server
-    build: ./Services/reservation-server
+  # =====================
+  # EUREKA SERVER
+  # =====================
+  discovery:
+    container_name: discovery
+    build: server/Services/discovery
     ports:
-      - "8083:8080"
-    depends_on:
-      - postgresql-reservation
+      - "8761:8761"
     networks:
       - microservices-net
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql-reservation:5432/reservationdb
-      SPRING_DATASOURCE_USERNAME: admin
-      SPRING_DATASOURCE_PASSWORD: admin
 
+  # =====================
+  # AUTH
+  # =====================
   keycloak:
     image: quay.io/keycloak/keycloak:latest
     container_name: keycloak
@@ -136,27 +110,81 @@ services:
     networks:
       - microservices-net
 
+  # =====================
+  # GATEWAY
+  # =====================
   gateway-service:
     container_name: api_gateway
-    build: ./Services/gateway-server
+    build: server/Services/gateway-server
     ports:
       - "8084:8084"
     depends_on:
       - match-service
       - reservation-service
+      - payment-service
+      - notification-service
       - keycloak
     networks:
       - microservices-net
 
+  # =====================
+  # MICROSERVICES
+  # =====================
+  match-service:
+    container_name: match-server
+    build: server/Services/match-server
+    ports:
+      - "8082:8080"
+    depends_on:
+      - postgresql-match
+      - config-server
+      - discovery
+    networks:
+      - microservices-net
 
+  reservation-service:
+    container_name: reservation-server
+    build: server/Services/reservation-server
+    ports:
+      - "8083:8080"
+    depends_on:
+      - postgresql-reservation
+      - config-server
+      - discovery
+      - kafka
+    networks:
+      - microservices-net
+
+  payment-service:
+    container_name: payment-server
+    build: server/Services/payment-server
+    ports:
+      - "8086:8080"
+    depends_on:
+      - kafka
+      - config-server
+    networks:
+      - microservices-net
+
+  notification-service:
+    container_name: notification-server
+    build: server/Services/notification-server
+    ports:
+      - "8087:8080"
+    depends_on:
+      - kafka
+      - config-server
+    networks:
+      - microservices-net
+
+# =====================
+# NETWORKS & VOLUMES
+# =====================
 networks:
   microservices-net:
     driver: bridge
 
 volumes:
-  postgres:
   postgres-match:
   postgres-reservation:
   pgadmin:
-  mongo:
-
