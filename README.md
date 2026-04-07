@@ -2,6 +2,9 @@
 
 Architecture microservices Spring Boot.
 
+![Diagramme sans nom (2)](https://github.com/user-attachments/assets/2f7e38af-c061-47ae-9b3f-3d0c5b31287f)
+
+
 ## server/Services
 
 ### Infrastructure
@@ -22,5 +25,3 @@ Architecture microservices Spring Boot.
 | Service | Rôle |
 |---|---|
 | `notification-server` | Envoi d'emails et génération de tickets PDF |
-![Diagramme sans nom (2)](https://github.com/user-attachments/assets/641d6ea9-5ad0-43f4-9e03-53676762e12a)
-![Diagramme sans nom (2)](https://github.com/user-attachments/assets/2f7e38af-c061-47ae-9b3f-3d0c5b31287f)
